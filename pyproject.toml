@@ -1,15 +1,20 @@
 [tool.poetry]
 name = "cat2cat"
-version = "There is offered the cat2cat procedure to map a categorical variable according to a transition table between two different time points. The transition table should to have a candidate for each category from the targeted for an update period. The main rule is to replicate the observation if it could be assigned to a few categories, then using simple frequencies or statistical methods to approximate probabilities of being assigned to each of them."
+version = "0.1.0.9000"
 description = "Unifying an inconsistent coded categorical variable in a panel/longtitudal dataset."
 authors = ["Maciej Nasinski"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
+numpy = "^1.23.1"
+pandas = "^1.4.3"
 
 [tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+flake8 = "^5.0.4"
+black = "^22.6.0"
 [tool.semantic_release]
 version_variable = "pyproject.toml:version" # version location
 branch = "main"                             # branch to make releases of
@@ -21,6 +26,3 @@ upload_to_pypi = false                      # don't auto-upload to PyPI
 remove_dist = false                         # don't remove dists
 patch_without_tag = true                    # patch release by default
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
