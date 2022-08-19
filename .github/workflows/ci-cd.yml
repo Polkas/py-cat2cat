@@ -28,7 +28,7 @@ jobs:
           run: poetry install
 
         - name: Test with pytest
-          run: poetry run pytest tests/ --cov=cat2cat --cov-report=xml
+          run: poetry run python -m pytest --doctest-modules --cov=cat2cat --cov-report=xml
 
         - name: Use Codecov to track coverage
           uses: codecov/codecov-action@v2
