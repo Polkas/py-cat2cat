@@ -12,8 +12,10 @@ def get_mappings(x):
     More precisely, an association list is used which is a linked list in which each list element consists of a key and value or values.
     An association list where unique categories codes are keys and matching categories from next or previous time point are values.
     A transition table is used to build such associative lists.
+
     Args:
         x (pandas.DataFrame or numpy.matrix): transition table with 2 columns where first column is assumed to be the older encoding.
+
     Returns:
         dict: with 2 dicts, `to_old` and `to_new`.
 
@@ -70,11 +72,14 @@ def get_mappings(x):
 def get_freqs(x, multiplier=None):
     """
     Getting frequencies from a vector with an optional multiplier
+
     Args:
         x (Iterable): a list like, categorical variable to summarize.
         multiplier (Iterable, optional): a list like, how many times to repeat certain value, additional weights. Defaults to None.
+
     Returns:
         dict with unique values and their counts
+
     >>> get_freqs([1,1,1,2,1,2,2,11])
     {1: 4, 2: 3, 11: 1}
     """
@@ -95,8 +100,10 @@ def cat_apply_freq(to_x, freqs):
 
     Returns:
         dict:
+
     Note:
         freqs arg keys and to_x arg values have to be of the same type
+
     >>> from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
     >>> from cat2cat.datasets import load_trans, load_occup
     >>> mappings = get_mappings(load_trans())
