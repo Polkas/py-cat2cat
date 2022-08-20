@@ -7,17 +7,18 @@ def get_mappings(x):
     """
     Transforming a mapping table with mappings to two associative lists
 
-    Transforming a transition table with mappings to two associative lists
-    to rearrange the one classification encoding into another, an associative list that maps keys to values is used.
-    More precisely, an association list is used which is a linked list in which each list element consists of a key and value or values.
-    An association list where unique categories codes are keys and matching categories from next or previous time point are values.
-    A transition table is used to build such associative lists.
-
     Args:
         x (pandas.DataFrame or numpy.matrix): transition table with 2 columns where first column is assumed to be the older encoding.
 
     Returns:
         dict: with 2 dicts, `to_old` and `to_new`.
+
+    Details:
+        Transforming a transition table with mappings to two associative lists
+        to rearrange the one classification encoding into another, an associative list that maps keys to values is used.
+        More precisely, an association list is used which is a linked list in which each list element consists of a key and value or values.
+        An association list where unique categories codes are keys and matching categories from next or previous time point are values.
+        A transition table is used to build such associative lists.
 
     >>> from cat2cat.mappings import get_mappings
     >>> from numpy import array
@@ -74,8 +75,8 @@ def get_freqs(x, multiplier=None):
     Getting frequencies from a vector with an optional multiplier
 
     Args:
-        x (Iterable): a list like, categorical variable to summarize.
-        multiplier (Iterable, optional): a list like, how many times to repeat certain value, additional weights. Defaults to None.
+        x (Iterable): a list like, categorical variable to summarize. multiplier (Iterable, optional): a list like, how many times to repeat certain value, additional weights. Defaults to None.
+        multiplier (Iterable): a list like, replications for each x value
 
     Returns:
         dict with unique values and their counts

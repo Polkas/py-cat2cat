@@ -40,13 +40,12 @@ jobs:
             files: ./coverage.xml
             flags: unittests
             name: codecov-umbrella
-            path_to_write_report: ./coverage/codecov_report.txt
             verbose: true
 
         # - name: Build documentation
         #   run: poetry run make html --directory docs/
-
-  # cd:
+      
+# cd:
   #   # Only run this job if the "ci" job passes
   #   needs: ci
 

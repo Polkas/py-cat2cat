@@ -1,4 +1,6 @@
 # cat2cat
+[![Build Status](https://github.com/polkas/py-cat2cat/workflows/ci-cd/badge.svg)](https://github.com/polkas/cat2cat/actions)
+[![codecov](https://codecov.io/gh/Polkas/py-cat2cat/branch/main/graph/badge.svg)](https://codecov.io/gh/Polkas/cat2cat)
 
 Unifying an inconsistent coded categorical variable in a panel/longtitudal dataset.
 

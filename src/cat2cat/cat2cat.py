@@ -11,6 +11,7 @@ from typing import Optional
 
 def cat2cat(data: cat2cat_data, mappings: cat2cat_mappings, ml: cat2cat_ml):
     """
+    Automatic mapping in a panel dataset - cat2cat procedure
 
     Args:
         data (cat2cat_data): _description_
@@ -18,7 +19,7 @@ def cat2cat(data: cat2cat_data, mappings: cat2cat_mappings, ml: cat2cat_ml):
         ml (cat2cat_ml): _description_
 
     Returns:
-        _type_: _description_
+        dict: _description_
     """
     isinstance(data, cat2cat_data)
     isinstance(mappings, cat2cat_mappings)

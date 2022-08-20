@@ -10,6 +10,10 @@ from typing import Type
 
 @dataclass
 class cat2cat_data:
+    """
+    The dataclass to represent a data argument used in cat2cat procedure
+    """
+
     old: pd.DataFrame
     new: pd.DataFrame
     cat_var_old: str
@@ -37,6 +41,10 @@ class cat2cat_data:
 
 @dataclass
 class cat2cat_mappings:
+    """
+    The dataclass to represent a mappings argument used in cat2cat procedure
+    """
+
     trans: pd.DataFrame
     direction: str
     freqs_df: pd.DataFrame = None
@@ -62,6 +70,10 @@ class cat2cat_mappings:
 
 @dataclass
 class cat2cat_ml:
+    """
+    The dataclass to represent a ml argument used in cat2cat procedure
+    """
+
     data: pd.DataFrame
     cat_var: str
     features: list[str]
