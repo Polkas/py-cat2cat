@@ -2,9 +2,10 @@ import pandas as pd
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 from cat2cat.datasets import load_trans, load_occup
 
-from sklearn.base import BaseEstimator
+from sklearn.base import ClassifierMixin
 from dataclasses import dataclass
 from typing import Optional
+from typing import Type
 
 
 @dataclass
@@ -64,10 +65,15 @@ class cat2cat_ml:
     data: pd.DataFrame
     cat_var: str
     features: list[str]
-    model: BaseEstimator
+    model: ClassifierMixin
 
     def __post_init__(self):
         assert isinstance(self.data, pd.DataFrame), "data has to be a pandas.DataFrame"
         assert isinstance(self.cat_var, str), "cat_var has to be a str"
         assert isinstance(self.features, list), "features has to be a list"
-        assert isinstance(self.model, BaseEstimator), "model has to be a BaseEstimator"
+        assert issubclass(
+            type(self.model), ClassifierMixin
+        ), "model has to be subclass of ClassifierMixin"
+        assert hasattr(
+            self.model, "predict_proba"
+        ), "model has to have (multi-label) predict_proba method"

@@ -88,17 +88,20 @@ def get_freqs(x, multiplier=None):
 def cat_apply_freq(to_x, freqs):
     """
     Applying frequencies to the object returned by the `get_mappings` function
+
     Args:
         to_x (dict): _description_
         freqs (pandas.DataFrame or dict): _description_
 
     Returns:
         dict:
+    Note:
+        freqs arg keys and to_x arg values have to be of the same type
     >>> from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
     >>> from cat2cat.datasets import load_trans, load_occup
     >>> mappings = get_mappings(load_trans())
     >>> occup = load_occup()
-    >>> codes_new = occup.code[occup.year == 2010].map(lambda x : str(x)).values
+    >>> codes_new = occup.code[occup.year == 2010].map(str).values
     >>> freqs = get_freqs(codes_new)
     >>> mapp_new_p = cat_apply_freq(mappings["to_new"], freqs)
     >>> mappings["to_new"]['3481']
