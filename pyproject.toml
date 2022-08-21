@@ -6,8 +6,12 @@ authors = ["Maciej Nasinski"]
 license = "MIT"
 readme = "README.md"
 
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.8,<3.12"
 numpy = "^1.23.1"
 pandas = "^1.4.3"
 scipy = "^1.9.0"
@@ -23,6 +27,7 @@ Sphinx = "^5.1.1"
 myst-nb = "^0.16.0"
 sphinx-autoapi = "^1.9.0"
 sphinx-rtd-theme = "^1.0.0"
+
 [tool.semantic_release]
 version_variable = "pyproject.toml:version" # version location
 branch = "main"                             # branch to make releases of
@@ -34,3 +39,6 @@ upload_to_pypi = false                      # don't auto-upload to PyPI
 remove_dist = false                         # don't remove dists
 patch_without_tag = true                    # patch release by default
 
+[project.urls]
+"Homepage" = "https://github.com/polkas/py-cat2cat"
+"Bug Tracker" = "https://github.com/polkas/py-cat2cat"

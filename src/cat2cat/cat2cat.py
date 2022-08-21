@@ -9,11 +9,11 @@ from cat2cat.cat2cat_utils import dummy_c2c
 from sklearn.base import BaseEstimator
 
 from dataclasses import dataclass
-from typing import Optional, Type
+from typing import Optional
 
 
 def cat2cat(
-    data: Type[cat2cat_data], mappings: Type[cat2cat_mappings], ml: Type[cat2cat_ml]
+    data: cat2cat_data, mappings: cat2cat_mappings, ml: cat2cat_ml
 ):
     """Automatic mapping in a panel dataset - cat2cat procedure
 

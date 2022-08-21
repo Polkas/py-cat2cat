@@ -5,7 +5,7 @@ from cat2cat.datasets import load_trans, load_occup
 from sklearn.base import ClassifierMixin
 from dataclasses import dataclass
 from typing import Optional
-from typing import Type
+from typing import Type, List
 
 
 @dataclass
@@ -69,8 +69,8 @@ class cat2cat_ml:
 
     data: pd.DataFrame
     cat_var: str
-    features: list[str]
-    models: list[ClassifierMixin]
+    features: List[str]
+    models: List[ClassifierMixin]
 
     def __post_init__(self):
         assert isinstance(self.data, pd.DataFrame), "data has to be a pandas.DataFrame"
