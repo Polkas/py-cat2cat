@@ -55,7 +55,8 @@ ml = cat2cat_ml(o_new, "code", ["salary", "age"], [RandomForestClassifier()])
 
 res = cat2cat(data, mappings, ml)
 data_final = concat([res["old"], res["new"]])
-data_final.sample(5)
+sub_cols = [0,1,2,8,10,12,13,14,15,16]
+data_final.groupby(["year"]).sample(5).iloc[:, sub_cols]
 ```
 
 ## Contributing

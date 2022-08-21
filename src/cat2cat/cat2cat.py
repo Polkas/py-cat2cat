@@ -83,7 +83,7 @@ def cat2cat(
         wei_naive_c2c=1 / cat_target_year.rep_c2c,
         wei_freq_c2c=[e for l in a_mapp_f for e in l],
     )
-
+    cat_target_year = cat_target_year.reset_index(drop=True)
     cat_base_year = dummy_c2c(cat_base_year, cat_var_base)
 
     # ML

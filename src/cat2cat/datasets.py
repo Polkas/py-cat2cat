@@ -19,7 +19,8 @@ def load_trans():
         pandas.DataFrame: trans dataset
     """
     sour = get_file_path("trans.csv")
-    return read_csv(sour, dtype=str)
+    with as_file(sour) as fil:
+        return read_csv(fil, dtype=str)
 
 
 def load_occup(small=False):
@@ -40,4 +41,5 @@ def load_occup(small=False):
 
     """
     sour = get_file_path("occup_small.pkl" if small else "occup.pkl")
-    return read_pickle(sour)
+    with as_file(sour) as fil:
+        return read_pickle(fil)
