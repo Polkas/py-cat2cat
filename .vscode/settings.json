@@ -1,4 +1,6 @@
 {
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
     "makefile.extensionOutputFolder": "./.vscode",
     "python.formatting.provider": "black",
     "editor.formatOnSave": true,

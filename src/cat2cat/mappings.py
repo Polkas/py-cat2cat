@@ -4,8 +4,13 @@ from collections.abc import Iterable
 
 
 def get_mappings(x):
-    """
-    Transforming a mapping table with mappings to two associative lists
+    """Transforming a mapping table with mappings to two associative lists
+
+    Transforming a transition table with mappings to two associative lists
+    to rearrange the one classification encoding into another, an associative list that maps keys to values is used.
+    More precisely, an association list is used which is a linked list in which each list element consists of a key and value or values.
+    An association list where unique categories codes are keys and matching categories from next or previous time point are values.
+    A transition table is used to build such associative lists.
 
     Args:
         x (pandas.DataFrame or numpy.matrix): transition table with 2 columns where first column is assumed to be the older encoding.
@@ -13,16 +18,10 @@ def get_mappings(x):
     Returns:
         dict: with 2 dicts, `to_old` and `to_new`.
 
-    Details:
-        Transforming a transition table with mappings to two associative lists
-        to rearrange the one classification encoding into another, an associative list that maps keys to values is used.
-        More precisely, an association list is used which is a linked list in which each list element consists of a key and value or values.
-        An association list where unique categories codes are keys and matching categories from next or previous time point are values.
-        A transition table is used to build such associative lists.
 
     >>> from cat2cat.mappings import get_mappings
     >>> from numpy import array
-    >>> trans = trans_small1 = array([
+    >>> trans = array([
     ...   [1111, 111101], [1111, 111102], [1123, 111405],
     ...   [1212, 112006], [1212, 112008], [1212, 112090],
     ... ])
@@ -32,14 +31,12 @@ def get_mappings(x):
     >>> mappings["to_new"]
     {1123: [111405], 1212: [112006, 112008, 112090], 1111: [111101, 111102]}
     """
-    assert isinstance(
-        x, (np.ndarray, pd.core.frame.DataFrame)
-    ), "x has to be an array or pandas.DataFrame"
+
     assert (len(x.shape) == 2) and (
         x.shape[1] == 2
-    ), "x should have 2 dimensions and the second one is equal to 2"
+    ), "x should have 2 dimensions and the second one is equal to 2 (columns)"
 
-    if isinstance(x, pd.core.frame.DataFrame):
+    if isinstance(x, pd.DataFrame):
         ff = x.iloc[:, 0].values
         ss = x.iloc[:, 1].values
     elif isinstance(x, np.ndarray):
@@ -75,18 +72,18 @@ def get_freqs(x, multiplier=None):
     Getting frequencies from a vector with an optional multiplier
 
     Args:
-        x (Iterable): a list like, categorical variable to summarize. multiplier (Iterable, optional): a list like, how many times to repeat certain value, additional weights. Defaults to None.
-        multiplier (Iterable): a list like, replications for each x value
+        x (Iterable): a list like, categorical variable to summarize.
+        multiplier (Iterable, optional): a list like, how many times to repeat certain value, additional weights. Defaults to None.
 
     Returns:
-        dict with unique values and their counts
+        dict: with unique values and their counts
 
     >>> get_freqs([1,1,1,2,1,2,2,11])
     {1: 4, 2: 3, 11: 1}
     """
     assert isinstance(x, Iterable), "x has to be an iterable"
-    assert (multiplier == None) or (len(x) == len(multiplier))
-    input = np.repeat(x, multiplier) if multiplier != None else x
+    assert (multiplier is None) or (len(x) == len(multiplier))
+    input = np.repeat(x, multiplier) if (multiplier is not None) else x
     res = dict(zip(*np.unique(input, return_counts=True)))
     return res
 
@@ -96,11 +93,11 @@ def cat_apply_freq(to_x, freqs):
     Applying frequencies to the object returned by the `get_mappings` function
 
     Args:
-        to_x (dict): _description_
-        freqs (pandas.DataFrame or dict): _description_
+        to_x (dict): object returned by `get_mappings` function
+        freqs (dict): object like the one returned by the `get_freqs` function
 
     Returns:
-        dict:
+        dict: the same shape as to_x arg but the values are probabilities now
 
     Note:
         freqs arg keys and to_x arg values have to be of the same type

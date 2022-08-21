@@ -5,11 +5,18 @@ from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 from pandas import DataFrame
 from sklearn.ensemble import RandomForestClassifier
 
+trans = load_trans()
 
-data = cat2cat_data(DataFrame(), DataFrame(), "cat_var", "cat_var", "year")
-mappings = cat2cat_mappings(DataFrame({"a": [1], "b": [2]}), "forward")
-ml = cat2cat_ml(DataFrame(), "cat_var", ["salary", "age"], RandomForestClassifier())
+occup = load_occup()
+o_2006 = occup.loc[occup.year == 2006, :].copy()
+o_2008 = o_old = occup.loc[occup.year == 2008, :].copy()
+o_2010 = o_new = occup.loc[occup.year == 2010, :].copy()
+o_2012 = occup.loc[occup.year == 2012, :].copy()
+
+data = cat2cat_data(o_old, o_new, "code", "code", "year")
+mappings = cat2cat_mappings(trans, "backward")
+ml = cat2cat_ml(o_new, "code", ["salary", "age"], [RandomForestClassifier()])
 
 
 def test_cat2cat_base():
-    assert cat2cat(data, mappings, ml) == None
+    assert isinstance(cat2cat(data, mappings, ml), dict)

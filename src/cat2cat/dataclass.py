@@ -10,9 +10,7 @@ from typing import Type
 
 @dataclass
 class cat2cat_data:
-    """
-    The dataclass to represent a data argument used in cat2cat procedure
-    """
+    """The dataclass to represent a data argument used in cat2cat procedure"""
 
     old: pd.DataFrame
     new: pd.DataFrame
@@ -41,13 +39,11 @@ class cat2cat_data:
 
 @dataclass
 class cat2cat_mappings:
-    """
-    The dataclass to represent a mappings argument used in cat2cat procedure
-    """
+    """The dataclass to represent a mappings argument used in cat2cat procedure"""
 
     trans: pd.DataFrame
     direction: str
-    freqs_df: pd.DataFrame = None
+    freqs: dict = None
 
     def get_mappings(self):
         return get_mappings(self.trans)
@@ -57,35 +53,33 @@ class cat2cat_mappings:
             self.trans, pd.core.frame.DataFrame
         ), "trans has to be a pandas.DataFrame"
         assert self.trans.shape[1] == 2, "trans has to have two columns"
-        assert (self.freqs_df == None) or (
-            isinstance(self.freqs_df, pd.core.frame.DataFrame)
-            and (self.freqs_df.shape[1] == 2)
-        ), "freqs_df has to be a pandas.DataFrame with 2 columns"
         assert isinstance(self.direction, str), "direction has to be a str"
         assert self.direction in [
             "forward",
             "backward",
         ], "direction has to be one of 'forward' or 'backward'"
+        assert (self.freqs == None) or isinstance(
+            self.freqs, dict
+        ), "freqs has to be a pandas.DataFrame with 2 columns"
 
 
 @dataclass
 class cat2cat_ml:
-    """
-    The dataclass to represent a ml argument used in cat2cat procedure
-    """
+    """The dataclass to represent a ml argument used in cat2cat procedure"""
 
     data: pd.DataFrame
     cat_var: str
     features: list[str]
-    model: ClassifierMixin
+    models: list[ClassifierMixin]
 
     def __post_init__(self):
         assert isinstance(self.data, pd.DataFrame), "data has to be a pandas.DataFrame"
         assert isinstance(self.cat_var, str), "cat_var has to be a str"
         assert isinstance(self.features, list), "features has to be a list"
-        assert issubclass(
-            type(self.model), ClassifierMixin
-        ), "model has to be subclass of ClassifierMixin"
-        assert hasattr(
-            self.model, "predict_proba"
-        ), "model has to have (multi-label) predict_proba method"
+        assert isinstance(self.models, list), "models has to be a list"
+        assert all(
+            [issubclass(type(e), ClassifierMixin) for e in self.models]
+        ), "models arg elements have to be subclass of ClassifierMixin each"
+        assert all(
+            [hasattr(e, "predict_proba") for e in self.models]
+        ), "models have to have the (multi-label) predict_proba method"

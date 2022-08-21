@@ -1,3 +1,6 @@
 myst-nb
 sphinx-autoapi
 sphinx-rtd-theme
+pandas 
+numpy
+sklearn

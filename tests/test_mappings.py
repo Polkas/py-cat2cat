@@ -33,38 +33,35 @@ trans_small = [
 
 # get_freqs
 
-###
-
 
 def test_get_freqs_range():
     actual = get_freqs(list(range(10)))
     expected = {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1}
-    assert actual == actual
-
-
-###
+    assert actual == expected
 
 
 def test_get_freqs_random_array():
     seed(1234)
     actual = get_freqs(choice(5, 100, replace=True))
     expected = {0: 14, 1: 25, 2: 21, 3: 17, 4: 23}
-    assert actual == actual
-
-
-###
+    assert actual == expected
 
 
 def test_get_freqs_random_list():
     seed(1234)
     actual = get_freqs(list(choice(5, 100, replace=True)))
     expected = {0: 14, 1: 25, 2: 21, 3: 17, 4: 23}
-    assert actual == actual
+    assert actual == expected
+
+
+def test_get_freqs_multiplier():
+    seed(1234)
+    actual = get_freqs(choice(5, 100, replace=True), choice(5, 100, replace=True))
+    expected = {0: 25, 1: 60, 2: 40, 3: 27, 4: 43}
+    assert actual == expected
 
 
 # get_mappings
-
-###
 
 
 def test_get_mappings_array():
@@ -106,9 +103,6 @@ def test_get_mappings_array():
     assert actual == expected
 
 
-###
-
-
 def test_get_mappings_DataFrame():
     actual = get_mappings(trans)["to_new"]["3417"]
     expected = [
@@ -121,6 +115,20 @@ def test_get_mappings_DataFrame():
         "333902",
     ]
     assert actual == expected
+
+
+def test_get_mappings_int():
+    with pytest.raises(AttributeError):
+        get_mappings(1)
+
+
+class class_with_shape:
+    shape = [1, 2]
+
+
+def test_get_mappings_shape():
+    with pytest.raises(TypeError):
+        get_mappings(class_with_shape())
 
 
 # cat_apply_freq

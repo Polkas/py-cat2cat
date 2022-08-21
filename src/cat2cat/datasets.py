@@ -12,31 +12,32 @@ def get_file_path(file):
 
 
 def load_trans():
-    """_summary_
+    """load trans dataset
     trans dataset containing mappings (transitions) between old (2008) and new (2010) occupational codes
 
     Returns:
-        pandas.DataFrame: _description_
+        pandas.DataFrame: trans dataset
     """
     sour = get_file_path("trans.csv")
     return read_csv(sour, dtype=str)
 
 
 def load_occup(small=False):
-    """_summary_
-    Occupational dataset
+    """load occup dataset
+
+    occup dataset is an example of unbalance panel dataset.
+    This is a simulated data although there are applied a real world characteristics from national statistical office survey.
+    The original survey is anonymous and take place every two years.
+    It is presenting a characteristics from randomly selected company and then using k step procedure employees are chosen.
 
     Args:
         small (bool): if to use a shrinked version of dataset
 
     Returns:
-        pandas.DataFrame: _description_
+        pandas.DataFrame: occup dataset
 
     Details:
-        occup dataset is an example of unbalance panel dataset.
-        This is a simulated data although there are applied a real world characteristics from national statistical office survey.
-        The original survey is anonymous and take place every two years.
-        It is presenting a characteristics from randomly selected company and then using k step procedure employees are chosen.
+
     """
     sour = get_file_path("occup_small.pkl" if small else "occup.pkl")
     return read_pickle(sour)
