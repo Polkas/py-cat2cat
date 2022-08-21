@@ -4,3 +4,4 @@ sphinx-rtd-theme
 pandas 
 numpy
 sklearn
+importlib_resources

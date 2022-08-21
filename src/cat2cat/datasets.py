@@ -1,4 +1,4 @@
-from importlib.resources import files, as_file
+from importlib_resources import files, as_file
 import numpy as np
 from pandas import read_pickle, read_csv
 import cat2cat.data
