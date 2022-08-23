@@ -17,9 +17,9 @@ o_2008 = o_old = occup.loc[occup.year == 2008, :]
 o_2010 = o_new = occup.loc[occup.year == 2010, :]
 o_2012 = occup.loc[occup.year == 2012, :]
 
-data = cat2cat_data(o_old, o_new, "cat_var", "cat_var", "year")
+data = cat2cat_data(o_old, o_new, "code", "code", "year")
 mappings = cat2cat_mappings(trans, "forward")
-ml = cat2cat_ml(o_new, "cat_var", ["salary", "age"], [RandomForestClassifier()])
+ml = cat2cat_ml(o_new, "code", ["salary", "age"], [RandomForestClassifier()])
 
 
 def test_prune():
@@ -30,5 +30,23 @@ def test_cross():
     assert isinstance(cross_c2c(DataFrame()), DataFrame)
 
 
-def test_dummy():
+def test_dummy_return():
+    expected_cols = list(occup.columns) + [
+        "index_c2c",
+        "g_new_c2c",
+        "rep_c2c",
+        "wei_naive_c2c",
+        "wei_freq_c2c",
+    ]
     assert isinstance(dummy_c2c(occup, "code"), DataFrame)
+    assert list(dummy_c2c(occup, "code").columns) == expected_cols
+
+
+def test_dummy_return_ml():
+    expected_cols = list(occup.columns) + [
+        "index_c2c",
+        "g_new_c2c",
+        "rep_c2c",
+        "wei_naive_c2c",
+        "wei_freq_c2c",
+    ]

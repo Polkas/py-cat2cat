@@ -42,7 +42,6 @@ from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 
 from pandas import DataFrame
-from sklearn.ensemble import RandomForestClassifier
 
 o_2006 = occup.loc[occup.year == 2006, :].copy()
 o_2008 = o_old = occup.loc[occup.year == 2008, :].copy()
@@ -51,13 +50,22 @@ o_2012 = occup.loc[occup.year == 2012, :].copy()
 
 data = cat2cat_data(old = o_old, new = o_new, "code", "code", "year")
 mappings = cat2cat_mappings(trans, "backward")
-ml = cat2cat_ml(o_new, "code", ["salary", "age"], [RandomForestClassifier()])
 
-res = cat2cat(data, mappings, ml)
+res = cat2cat(data, mappings)
+
 data_final = concat([res["old"], res["new"]])
 sub_cols = ["id", "edu", "code", "year", "index_c2c",
  "g_new_c2c", "rep_c2c", "wei_naive_c2c", "wei_freq_c2c"]
 data_final.groupby(["year"]).sample(5).loc[:, sub_cols]
+```
+
+with ml models:
+
+```python
+from sklearn.neighbors import KNeighborsClassifier
+ml = cat2cat_ml(o_new, "code", ["salary", "age"], [KNeighborsClassifier()])
+
+# cat2cat
 ```
 
 ## Contributing

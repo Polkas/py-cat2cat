@@ -1,5 +1,5 @@
-from pandas import DataFrame
-from numpy import arange, repeat, array
+from pandas import DataFrame, merge
+from numpy import arange, repeat, array, isin, setdiff1d, in1d
 
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 from cat2cat.datasets import load_trans, load_occup
@@ -11,9 +11,13 @@ from sklearn.base import BaseEstimator
 from dataclasses import dataclass
 from typing import Optional
 
+import pdb
+
+__all__ = ["cat2cat"]
+
 
 def cat2cat(
-    data: cat2cat_data, mappings: cat2cat_mappings, ml: cat2cat_ml
+    data: cat2cat_data, mappings: cat2cat_mappings, ml: Optional[cat2cat_ml] = None
 ):
     """Automatic mapping in a panel dataset - cat2cat procedure
 
@@ -34,23 +38,31 @@ def cat2cat(
     >>> o_new = occup.loc[occup.year == 2010, :].copy()
     >>> data_c2c = cat2cat_data(o_old, o_new, "code", "code", "year")
     >>> mappings_c2c = cat2cat_mappings(trans, "forward")
-    >>> ml_c2c = cat2cat_ml(o_new, "code", ["salary", "age"], [RandomForestClassifier()])
-    >>> cat2cat(data_c2c, mappings_c2c, ml_c2c)
+    >>> cat2cat(data_c2c, mappings_c2c)
     {...
 
     """
+    assert isinstance(data, cat2cat_data), "data arg has to be cat2cat_data instance"
+    assert isinstance(
+        mappings, cat2cat_mappings
+    ), "mappings arg has to be cat2cat_mappings instance"
+    assert (ml is None) or isinstance(
+        ml, cat2cat_ml
+    ), "ml arg has to be cat2cat_ml instance"
 
-    isinstance(data, cat2cat_data)
-    isinstance(mappings, cat2cat_mappings)
-    isinstance(ml, cat2cat_ml)
+    is_direct = not data.id_var is None
+    index_target_direct = None
+    index_target_cat2cat = None
+
+    # if direct split
 
     mapps = mappings.get_mappings()
 
     if mappings.direction == "forward":
         cat_var_base = data.cat_var_old
         cat_var_target = data.cat_var_new
-        cat_base_year = data.old
-        cat_target_year = data.new  # if direct
+        base_df = data.old
+        target_df = data.new  # if direct
         cat_mid = None  # if direct
         mapp = mapps["to_old"]
         target_name = "new"
@@ -58,43 +70,99 @@ def cat2cat(
     elif mappings.direction == "backward":
         cat_var_base = data.cat_var_new
         cat_var_target = data.cat_var_old
-        cat_base_year = data.new
-        cat_target_year = data.old  # if direct
+        base_df = data.new
+        target_df = data.old  # if direct
         cat_mid = None  # if direct
         mapp = mapps["to_new"]
         target_name = "old"
         base_name = "new"
 
-    freqs = get_freqs(cat_base_year[cat_var_base])
+    # mappings and frequencies
+    freqs = get_freqs(base_df[cat_var_base])
     mapp_f = cat_apply_freq(mapp, freqs)
-
-    a_mapp = [mapp.get(e, []) for e in cat_target_year[cat_var_target]]
-    a_mapp_f = [mapp_f.get(e, []) for e in cat_target_year[cat_var_target]]
+    # mappings and frequencies per obs
+    a_mapp = [mapp.get(e, []) for e in target_df[cat_var_target]]
+    a_mapp_f = [mapp_f.get(e, []) for e in target_df[cat_var_target]]
     lens = [len(e) for e in a_mapp]
-    nrow_target = cat_target_year.shape[0]
-    cat_target_year = cat_target_year.iloc[repeat(arange(nrow_target), lens), :]
-    nrow_targe_after = cat_target_year.shape[0]
-    cat_target_year = cat_target_year.assign(
-        index_c2c=arange(nrow_targe_after),
+    nrow_target = target_df.shape[0]
+
+    # target_df
+    target_df["index_c2c"] = arange(nrow_target)
+    target_df = target_df.iloc[repeat(arange(nrow_target), lens), :]
+    target_df = target_df.assign(
         g_new_c2c=[e for l in a_mapp for e in l],
         rep_c2c=repeat(lens, lens),
     )
-    cat_target_year = cat_target_year.assign(
-        wei_naive_c2c=1 / cat_target_year.rep_c2c,
+    target_df = target_df.assign(
+        wei_naive_c2c=1 / target_df.rep_c2c,
         wei_freq_c2c=[e for l in a_mapp_f for e in l],
     )
-    cat_target_year = cat_target_year.reset_index(drop=True)
-    cat_base_year = dummy_c2c(cat_base_year, cat_var_base)
+    target_df = target_df.reset_index(drop=True)
+
+    # base_df
+    base_df = dummy_c2c(base_df, cat_var_base)
 
     # ML
-    ml_names = [type(m).__name__ for m in ml.models]
-    for k in list(mapp.keys()):
-        # data for each possible category
-        # predict probabilities for each of them
-        pass
+    if ml is not None:
+        _cat2cat_ml(ml, mapp, target_df, cat_var_target, base_df)
 
+    # Final
     res = dict()
-    res[target_name] = cat_target_year
-    res[base_name] = cat_base_year
+    res[target_name] = target_df
+    res[base_name] = base_df
 
     return res
+
+
+def _cat2cat_direct():
+    pass
+
+
+def _cat2cat_ml(ml, mapp, target_df, cat_var_target, base_df):
+
+    for m in ml.models:
+        ml_name = type(m).__name__
+        ml_colname = "wei_" + ml_name + "_c2c"
+        target_df[ml_colname] = target_df["wei_freq_c2c"]
+        base_df[ml_colname] = 1
+
+    for target_cat in list(mapp.keys()):
+        base_cats = mapp[target_cat]
+        ml_cat_var = ml.data[ml.cat_var]
+        if (not any(in1d(base_cats, ml_cat_var.unique()))) or (len(base_cats) == 1):
+            continue
+
+        target_cat_index = in1d(target_df[cat_var_target].values, target_cat)
+        ml_cat_index = in1d(ml.data[ml.cat_var].values, base_cats)
+
+        data_ml_train = ml.data.loc[ml_cat_index, :]
+        data_ml_target = target_df.loc[target_cat_index, :]
+
+        target_cats = data_ml_target["g_new_c2c"]
+        data_ml_target_uniq = data_ml_target.drop_duplicates(
+            subset=["index_c2c"] + ml.features
+        )
+        index_c2c = data_ml_target_uniq["index_c2c"].values
+
+        for m in ml.models:
+            ml_name = type(m).__name__
+            ml_colname = "wei_" + ml_name + "_c2c"
+
+            try:
+                m.fit(X=data_ml_train.loc[:, ml.features], y=data_ml_train[ml.cat_var])
+
+                X_test = data_ml_target_uniq.loc[:, ml.features]
+                preds = m.predict_proba(X=X_test)
+
+                preds_df = DataFrame(preds)
+                preds_df.columns = m.classes_
+                preds_df.loc[:, setdiff1d(target_cats.unique(), m.classes_)] = 0
+                preds_df["index_c2c"] = index_c2c
+                preds_df_melt = preds_df.melt(id_vars="index_c2c", var_name="g_new_c2c")
+                merge_on = ["index_c2c", "g_new_c2c"]
+                p_order = target_df.loc[target_cat_index, merge_on].merge(
+                    preds_df_melt, on=merge_on, how="left"
+                )
+                target_df.loc[target_cat_index, ml_colname] = p_order["value"].values
+            except:
+                None
