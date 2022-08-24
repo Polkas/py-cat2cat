@@ -6,7 +6,7 @@ from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 from cat2cat.cat2cat_utils import prune_c2c, cross_c2c, dummy_c2c
 
 from pandas import DataFrame
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 
 trans = load_trans()
@@ -19,7 +19,7 @@ o_2012 = occup.loc[occup.year == 2012, :]
 
 data = cat2cat_data(o_old, o_new, "code", "code", "year")
 mappings = cat2cat_mappings(trans, "forward")
-ml = cat2cat_ml(o_new, "code", ["salary", "age"], [RandomForestClassifier()])
+ml = cat2cat_ml(o_new, "code", ["salary", "age"], [LinearDiscriminantAnalysis()])
 
 
 def test_prune():
@@ -49,4 +49,10 @@ def test_dummy_return_ml():
         "rep_c2c",
         "wei_naive_c2c",
         "wei_freq_c2c",
+        "wei_LinearDiscriminantAnalysis_c2c",
     ]
+    assert isinstance(dummy_c2c(occup, "code"), DataFrame)
+    assert (
+        list(dummy_c2c(occup, "code", ["LinearDiscriminantAnalysis"]).columns)
+        == expected_cols
+    )

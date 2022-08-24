@@ -10,7 +10,7 @@ def prune_c2c(df: DataFrame, inplace: bool = False) -> DataFrame:
         df (DataFrame): a specific period from the cat2cat function result.
         inplace (bool): Whether to perform the operation inplace. By default False.
     Returns:
-        DataFrame: _description_
+        DataFrame: df argument with possibly reduced number of rows.
     """
     return DataFrame()
 
@@ -23,7 +23,7 @@ def cross_c2c(df: DataFrame, inplace: bool = False) -> DataFrame:
         inplace (bool): Whether to perform the operation inplace. By default False.
 
     Returns:
-        DataFrame: _description_
+        DataFrame: df argument with additional column wei_cross_c2c which is a combination of other weights.
     """
     df2 = df if inplace else df.copy()
 

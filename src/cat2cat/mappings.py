@@ -18,7 +18,6 @@ def get_mappings(x):
     Returns:
         dict: with 2 dicts, `to_old` and `to_new`.
 
-
     >>> from cat2cat.mappings import get_mappings
     >>> from numpy import array
     >>> trans = array([

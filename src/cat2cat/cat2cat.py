@@ -11,8 +11,6 @@ from sklearn.base import BaseEstimator
 from dataclasses import dataclass
 from typing import Optional
 
-import pdb
-
 __all__ = ["cat2cat"]
 
 
@@ -24,10 +22,20 @@ def cat2cat(
     Args:
         data (cat2cat_data): dataclass with data related arguments
         mappings (cat2cat_mappings): dataclass with mappings related arguments
-        ml (cat2cat_ml): dataclass with ml related arguments
+        ml (Optional[cat2cat_ml]): dataclass with ml related arguments
 
     Returns:
-        dict: _description_
+        dict: with 2 DataFrames, old and new.
+        There will be added additional columns like index_c2c, g_new_c2c, wei_freq_c2c, rep_c2c, wei_(ml method name)_c2c.
+        Additional columns will be informative only for a one DataFrame as we always make the changes to one direction.
+
+    Note:
+        1. Without ml section only simple frequencies are assessed.
+        When ml model is broken then weights from simple frequencies are taken.
+        `knn` method is recommended for smaller datasets.
+
+        2. `mappings.trans` arg columns and the `data.cat_var` column have to be of the same type.
+        When ml part applied `ml.cat_var` has to have the same type too.
 
     >>> from cat2cat import cat2cat
     >>> from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
@@ -78,8 +86,10 @@ def cat2cat(
         base_name = "new"
 
     # mappings and frequencies
+    # TODO should check mappings.freqs and if the DataFrame already has wei_freq_c2c
     freqs = get_freqs(base_df[cat_var_base])
     mapp_f = cat_apply_freq(mapp, freqs)
+
     # mappings and frequencies per obs
     a_mapp = [mapp.get(e, []) for e in target_df[cat_var_target]]
     a_mapp_f = [mapp_f.get(e, []) for e in target_df[cat_var_target]]
@@ -129,6 +139,7 @@ def _cat2cat_ml(ml, mapp, target_df, cat_var_target, base_df):
     for target_cat in list(mapp.keys()):
         base_cats = mapp[target_cat]
         ml_cat_var = ml.data[ml.cat_var]
+
         if (not any(in1d(base_cats, ml_cat_var.unique()))) or (len(base_cats) == 1):
             continue
 

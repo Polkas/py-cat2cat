@@ -43,17 +43,15 @@ from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 
 from pandas import DataFrame
 
-o_2006 = occup.loc[occup.year == 2006, :].copy()
-o_2008 = o_old = occup.loc[occup.year == 2008, :].copy()
-o_2010 = o_new = occup.loc[occup.year == 2010, :].copy()
-o_2012 = occup.loc[occup.year == 2012, :].copy()
+o_old = occup.loc[occup.year == 2008, :].copy()
+o_new = occup.loc[occup.year == 2010, :].copy()
 
 data = cat2cat_data(old = o_old, new = o_new, "code", "code", "year")
 mappings = cat2cat_mappings(trans, "backward")
 
-res = cat2cat(data, mappings)
+c2c = cat2cat(data, mappings)
+data_final = concat([c2c["old"], c2c["new"]])
 
-data_final = concat([res["old"], res["new"]])
 sub_cols = ["id", "edu", "code", "year", "index_c2c",
  "g_new_c2c", "rep_c2c", "wei_naive_c2c", "wei_freq_c2c"]
 data_final.groupby(["year"]).sample(5).loc[:, sub_cols]
@@ -63,9 +61,49 @@ with ml models:
 
 ```python
 from sklearn.neighbors import KNeighborsClassifier
-ml = cat2cat_ml(o_new, "code", ["salary", "age"], [KNeighborsClassifier()])
 
-# cat2cat
+ml = cat2cat_ml(
+    occup.loc[occup.year >= 2010, :].copy(), 
+    "code", 
+    ["salary", "age", "edu"], 
+    [KNeighborsClassifier()]
+)
+
+c2c = cat2cat(data, mappings, ml)
+data_final = concat([c2c["old"], c2c["new"]])
+```
+
+with 4 periods , one mapping table and backward direction:
+
+```
+from cat2cat.cat2cat_utils import dummy_c2c
+
+o_2006 = occup.loc[occup.year == 2006, :].copy()
+o_2008 = occup.loc[occup.year == 2008, :].copy()
+o_2010 = occup.loc[occup.year == 2010, :].copy()
+o_2012 = occup.loc[occup.year == 2012, :].copy()
+
+
+data = cat2cat_data(o_2008, o_2010, "code", "code", "year")
+mappings = cat2cat_mappings(trans, "backward")
+
+occup_back_2008_2010 = cat2cat(data, mappings)
+data = cat2cat_data(
+    o_2006, occup_back_2008_2010["old"], 
+    "code", "g_new_c2c", "year"
+)
+occup_back_2006_2008 = cat2cat(data, mappings)
+
+o_2006_n = occup_back_2006_2008["old"]
+o_2008_n = occup_back_2006_2008["new"] # or occup_back_2008_2010["old"]
+o_2010_n = occup_back_2008_2010["new"]
+o_2012_n = dummy_c2c(o_2012, "code")
+
+data_final = concat([o_2006_n, o_2008_n, o_2010_n, o_2012_n])
+
+sub_cols = ["id", "edu", "code", "year", "index_c2c",
+ "g_new_c2c", "rep_c2c", "wei_naive_c2c", "wei_freq_c2c"]
+data_final.groupby(["year"]).sample(5).loc[:, sub_cols]
 ```
 
 ## Contributing

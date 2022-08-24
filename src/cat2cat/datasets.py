@@ -36,9 +36,6 @@ def load_occup(small=False):
 
     Returns:
         pandas.DataFrame: occup dataset
-
-    Details:
-
     """
     sour = get_file_path("occup_small.pkl" if small else "occup.pkl")
     with as_file(sour) as fil:

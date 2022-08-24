@@ -10,7 +10,17 @@ from typing import Type, List
 
 @dataclass(frozen=True)
 class cat2cat_data:
-    """The dataclass to represent a data argument used in cat2cat procedure"""
+    """The dataclass to represent a data argument used in cat2cat procedure
+
+    Args:
+        old (DataFrame): older time point in a panel.
+        new (DataFrametr): newer time point in a panel.
+        cat_var_old (str): name of the categorical variable in the older time point.
+        cat_var_new (str): name of the categorical variable in the newer time point.
+        time_var (str): name of the time variable.
+        id_var (Optional[str]): name of the unique identifier variable - if this is specified then for subjects observe in both periods the direct mapping is applied.
+        multiplier_var (Optional[str]): name of the multiplier variable - number of replication needed to reproduce the population.
+    """
 
     old: DataFrame
     new: DataFrame
@@ -18,7 +28,6 @@ class cat2cat_data:
     cat_var_new: str
     time_var: str
     id_var: Optional[str] = None
-    multiplier_varid_var: Optional[str] = None
     multiplier_var: Optional[str] = None
 
     def __post_init__(self):
@@ -43,11 +52,23 @@ class cat2cat_data:
 
 @dataclass(frozen=True)
 class cat2cat_mappings:
-    """The dataclass to represent a mappings argument used in cat2cat procedure"""
+    """The dataclass to represent a mappings argument used in cat2cat procedure
+
+    Args:
+        trans (DataFrame): mapping (transition) table - all categories for cat_var in old and new datasets have to be included.
+        diretion (str): "backward" or "forward"
+        freqs (Optional[str]): If It is not provided then is assessed automatically.
+        Artificial counts for each variable level in the base period.
+        It is optional nevertheless will be often needed, as gives more control.
+
+    Note:
+        The mapping (transition) table should to have a candidate for each category from the targeted for an update period.
+        The observation from targeted for an updated period without a matched category from base period is removed.
+    """
 
     trans: DataFrame
     direction: str
-    freqs: dict = None
+    freqs: Optional[dict] = None
 
     def get_mappings(self):
         return get_mappings(self.trans)
@@ -67,7 +88,15 @@ class cat2cat_mappings:
 
 @dataclass(frozen=True)
 class cat2cat_ml:
-    """The dataclass to represent a ml argument used in cat2cat procedure"""
+    """The dataclass to represent a ml argument used in cat2cat procedure
+
+    Args:
+        data (DataFrame): dataset with features and the `cat_var`.
+        cat_var (str): the dependent variable name.
+        features (List[str]): list of features names where all have to be numeric or logical
+        models (List[ClassifierMixin]): scikit-learn instances (classes inherit from ClassifierMixin) like,
+         RandomForestClassifier or LinearDiscriminantAnalysis
+    """
 
     data: DataFrame
     cat_var: str

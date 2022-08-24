@@ -7,6 +7,7 @@ from pandas import DataFrame
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 trans = load_trans()
 
@@ -27,10 +28,29 @@ def test_cat2cat_base():
     assert sorted(list(c2c.keys())) == ["new", "old"]
 
 
-ml = cat2cat_ml(o_new, "code", ["salary", "age"], [DecisionTreeClassifier()])
+ml = cat2cat_ml(
+    occup.loc[occup.year >= 2010, :].copy(),
+    "code",
+    ["salary", "age", "edu", "sex"],
+    [LinearDiscriminantAnalysis(), DecisionTreeClassifier()],
+)
 
 
 def test_cat2cat_ml():
     c2c = cat2cat(data, mappings, ml)
     assert isinstance(c2c, dict)
     assert sorted(list(c2c.keys())) == ["new", "old"]
+
+
+# import time
+# res = list()
+# for i in range(5):
+#     start_time = time.time()
+#     cat2cat(data, mappings, ml)
+#     res.append(time.time() - start_time)
+# sum(res) / 5
+
+
+# import cProfile
+# cProfile.run("cat2cat(data, mappings, ml)", "program.prof")
+# snakeviz program.prof
