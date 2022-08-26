@@ -4,8 +4,7 @@ from cat2cat.datasets import load_trans, load_occup
 from pandas import DataFrame
 from sklearn.base import ClassifierMixin
 from dataclasses import dataclass
-from typing import Optional
-from typing import Type, List
+from typing import Type, List, Dict, Any, Optional, Union
 
 
 @dataclass(frozen=True)
@@ -13,8 +12,8 @@ class cat2cat_data:
     """The dataclass to represent a data argument used in cat2cat procedure
 
     Args:
-        old (DataFrame): older time point in a panel.
-        new (DataFrametr): newer time point in a panel.
+        old (DataFrame): older time point in a panel, has to have all columns set in the rest of arguments.
+        new (DataFrame): newer time point in a panel, has to have all columns set in the rest of arguments.
         cat_var_old (str): name of the categorical variable in the older time point.
         cat_var_new (str): name of the categorical variable in the newer time point.
         time_var (str): name of the time variable.
@@ -34,14 +33,16 @@ class cat2cat_data:
         assert isinstance(self.old, DataFrame), "old has to be a pandas.DataFrame"
         assert isinstance(self.new, DataFrame), "new has to be a pandas.DataFrame"
         assert isinstance(self.cat_var_old, str) and (
-            self.cat_var_old in self.old
+            self.cat_var_old in self.old.columns
         ), "cat_var_old has to be a str and the old DataFrame column"
         assert isinstance(self.cat_var_new, str) and (
-            self.cat_var_new in self.new
+            self.cat_var_new in self.new.columns
         ), "cat_var_new has to be a str and the new DataFrame column"
         assert (
             isinstance(self.id_var, str)
-            and ((self.id_var in self.old) and (self.id_var in self.new))
+            and (
+                (self.id_var in self.old.columns) and (self.id_var in self.new.columns)
+            )
         ) or (
             self.id_var is None
         ), "id_var has to be a str and the new DataFrame column, or None"
@@ -55,7 +56,7 @@ class cat2cat_mappings:
     """The dataclass to represent a mappings argument used in cat2cat procedure
 
     Args:
-        trans (DataFrame): mapping (transition) table - all categories for cat_var in old and new datasets have to be included.
+        trans (DataFrame): mapping (transition) table (with 2 columns, old and new encoding) - all categories for cat_var in old and new datasets have to be included.
         diretion (str): "backward" or "forward"
         freqs (Optional[str]): If It is not provided then is assessed automatically.
         Artificial counts for each variable level in the base period.
@@ -68,9 +69,9 @@ class cat2cat_mappings:
 
     trans: DataFrame
     direction: str
-    freqs: Optional[dict] = None
+    freqs: Union[Dict[Any, int], None] = None
 
-    def get_mappings(self):
+    def get_mappings(self) -> Dict[str, Dict[str, List[Any]]]:
         return get_mappings(self.trans)
 
     def __post_init__(self):

@@ -9,7 +9,7 @@ from cat2cat.cat2cat_utils import dummy_c2c
 from sklearn.base import BaseEstimator
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any
 
 __all__ = ["cat2cat"]
 
@@ -40,6 +40,7 @@ def cat2cat(
     >>> from cat2cat import cat2cat
     >>> from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
     >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from cat2cat.datasets import load_trans, load_occup
     >>> trans = load_trans()
     >>> occup = load_occup()
     >>> o_old = occup.loc[occup.year == 2008, :].copy()
@@ -85,9 +86,20 @@ def cat2cat(
         target_name = "old"
         base_name = "new"
 
-    # mappings and frequencies
-    # TODO should check mappings.freqs and if the DataFrame already has wei_freq_c2c
-    freqs = get_freqs(base_df[cat_var_base])
+    # frequencies
+    user_freqs: Optional[dict[Any, int]] = mappings.freqs
+    freqs: dict[Any, int]
+    if user_freqs == None:
+        if "wei_freq_c2c" in base_df.columns:
+            freqs = dict()
+            L = list(zip(base_df[cat_var_base], base_df["wei_freq_c2c"]))
+            for k, v in L:
+                freqs[k] = freqs.get(k, 0) + v
+        else:
+            freqs = get_freqs(base_df[cat_var_base].values)
+    else:
+        freqs = user_freqs
+    # frequencies per category
     mapp_f = cat_apply_freq(mapp, freqs)
 
     # mappings and frequencies per obs
@@ -97,7 +109,7 @@ def cat2cat(
     nrow_target = target_df.shape[0]
 
     # target_df
-    target_df["index_c2c"] = arange(nrow_target)
+    target_df = target_df.assign(index_c2c=arange(nrow_target))
     target_df = target_df.iloc[repeat(arange(nrow_target), lens), :]
     target_df = target_df.assign(
         g_new_c2c=[e for l in a_mapp for e in l],
@@ -124,7 +136,7 @@ def cat2cat(
     return res
 
 
-def _cat2cat_direct():
+def _cat2cat_direct(target_df, base_df):
     pass
 
 

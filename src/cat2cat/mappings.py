@@ -1,9 +1,11 @@
-import pandas as pd
-import numpy as np
+from pandas import DataFrame
+from numpy import ndarray, unique, repeat, around, array, round
+
 from collections.abc import Iterable
+from typing import Union, Optional, Any, List, Dict, Sequence
 
 
-def get_mappings(x):
+def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[str, List[Any]]]:
     """Transforming a mapping table with mappings to two associative lists
 
     Transforming a transition table with mappings to two associative lists
@@ -13,7 +15,7 @@ def get_mappings(x):
     A transition table is used to build such associative lists.
 
     Args:
-        x (pandas.DataFrame or numpy.matrix): transition table with 2 columns where first column is assumed to be the older encoding.
+        x (pandas.DataFrame or numpy.ndarray): transition table with 2 columns where first column is assumed to be the older encoding.
 
     Returns:
         dict: with 2 dicts, `to_old` and `to_new`.
@@ -35,10 +37,10 @@ def get_mappings(x):
         x.shape[1] == 2
     ), "x should have 2 dimensions and the second one is equal to 2 (columns)"
 
-    if isinstance(x, pd.DataFrame):
+    if isinstance(x, DataFrame):
         ff = x.iloc[:, 0].values
         ss = x.iloc[:, 1].values
-    elif isinstance(x, np.ndarray):
+    elif isinstance(x, ndarray):
         ff = x[:, 0]
         ss = x[:, 1]
     else:
@@ -53,7 +55,7 @@ def get_mappings(x):
             idx = ss == e
             to_old[e] = sorted(list(set(ff[idx])))
         except:
-            to_old[e] = None
+            to_old[e] = []
 
     to_new = dict()
     for e in from_old:
@@ -61,18 +63,21 @@ def get_mappings(x):
             idx = ff == e
             to_new[e] = sorted(list(set(ss[idx])))
         except:
-            to_new[e] = None
+            to_new[e] = []
 
     return dict(to_old=to_old, to_new=to_new)
 
 
-def get_freqs(x, multiplier=None):
+def get_freqs(
+    x: Sequence[Any], multiplier: Optional[Sequence[int]] = None
+) -> Dict[Any, int]:
     """
     Getting frequencies from a vector with an optional multiplier
 
     Args:
-        x (Iterable): a list like, categorical variable to summarize.
-        multiplier (Iterable, optional): a list like, how many times to repeat certain value, additional weights. Defaults to None.
+        x (Sequence): a list like, categorical variable to summarize.
+        multiplier (Optional[Sequence]): a list like, how many times to repeat certain value, additional weights.
+        Have the same length as the x argument. Defaults to None.
 
     Returns:
         dict: with unique values and their counts
@@ -80,14 +85,21 @@ def get_freqs(x, multiplier=None):
     >>> get_freqs([1,1,1,2,1,2,2,11])
     {1: 4, 2: 3, 11: 1}
     """
-    assert isinstance(x, Iterable), "x has to be an iterable"
-    assert (multiplier is None) or (len(x) == len(multiplier))
-    input = np.repeat(x, multiplier) if (multiplier is not None) else x
-    res = dict(zip(*np.unique(input, return_counts=True)))
+    assert isinstance(x, Iterable), "x has to be a Iterable"
+    assert (multiplier is None) or isinstance(
+        multiplier, Iterable
+    ), "multiplier has to be a Iterable"
+    input: ndarray
+    if multiplier is not None:
+        input = repeat(x, multiplier)
+    else:
+        input = array(x)
+    input_unique: tuple = unique(input, return_counts=True)
+    res: dict = dict(zip(*input_unique))
     return res
 
 
-def cat_apply_freq(to_x, freqs):
+def cat_apply_freq(to_x: Dict, freqs: Dict[Any, int]) -> Dict[str, List[float]]:
     """
     Applying frequencies to the object returned by the `get_mappings` function
 
@@ -117,7 +129,7 @@ def cat_apply_freq(to_x, freqs):
     assert isinstance(freqs, dict), "freqs has to be dict"
     res = dict()
     for x in to_x:
-        ff = [freqs.get(e, 1e-12) for e in to_x[x]]
-        fff = np.around(np.array(ff) / sum(ff), 10)
-        res[x] = list(fff)
+        cs = [freqs.get(e, 1e-12) for e in to_x[x]]
+        fs = round(array(cs) / sum(cs), 10)
+        res[x] = list(fs)
     return res

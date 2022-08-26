@@ -1,37 +1,62 @@
 from pandas import DataFrame
-from numpy import arange
-from typing import Optional
+from numpy import arange, concatenate
+from typing import Optional, Callable, List
 
 
-def prune_c2c(df: DataFrame, inplace: bool = False) -> DataFrame:
+def prune_c2c(
+    df: DataFrame,
+    prune_fun: Callable[[List[float]], List[bool]],
+    wei_var: str = "wei_freq_c2c",
+    index_var: str = "index_c2c",
+    inplace: bool = False,
+) -> DataFrame:
     """Pruning which could be useful after the mapping process
 
     Args:
         df (DataFrame): a specific period from the cat2cat function result.
+        prune_fun (callable): a function to process a vector of weights and return a vector of boolean of the same length.
+        wei_var (str): By default "wei_freq_c2c".
+        index_var (str): By default "index_c2c".
         inplace (bool): Whether to perform the operation inplace. By default False.
     Returns:
         DataFrame: df argument with possibly reduced number of rows.
+
+    >>> from cat2cat import cat2cat
+    >>> from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from cat2cat.datasets import load_trans, load_occup
+    >>> trans = load_trans()
+    >>> occup = load_occup()
+    >>> o_old = occup.loc[occup.year == 2008, :].copy()
+    >>> o_new = occup.loc[occup.year == 2010, :].copy()
+    >>> data_c2c = cat2cat_data(o_old, o_new, "code", "code", "year")
+    >>> mappings_c2c = cat2cat_mappings(trans, "forward")
+    >>> c2c = cat2cat(data_c2c, mappings_c2c)
+    >>> prune_c2c(c2c["old"], lambda x: [e > 0 for e in x])
+              id        age    sex  edu        exp  ...  index_c2c  g_new_c2c  rep_c2c wei_naive_c2c  wei_freq_c2c
+    ...
     """
-    return DataFrame()
+    assert isinstance(index_var, str), "index argument has to be a str"
+    assert isinstance(wei_var, str), "col argument has to be a str"
+    assert isinstance(df, DataFrame) and (
+        (index_var in df.columns) and (wei_var in df.columns)
+    ), "df argument has to be a DataFrame with the index and col args columns"
+    assert callable(prune_fun), "prune_fun argument has to be a callable"
+    assert isinstance(inplace, bool), "inplace argument has to be a bool"
 
-
-def cross_c2c(df: DataFrame, inplace: bool = False) -> DataFrame:
-    """Make a combination of weights from different methods
-
-    Args:
-        df (DataFrame): a specific period from the cat2cat function result.
-        inplace (bool): Whether to perform the operation inplace. By default False.
-
-    Returns:
-        DataFrame: df argument with additional column wei_cross_c2c which is a combination of other weights.
-    """
     df2 = df if inplace else df.copy()
 
-    return DataFrame()
+    final_rows = (
+        df2.groupby(index_var, sort=False)
+        .apply(lambda x: prune_fun(x[wei_var].values))
+        .values
+    )
+
+    return df2.loc[concatenate(final_rows)]
 
 
 def dummy_c2c(
-    df: DataFrame, cat_var: str, models: Optional[list] = None, inplace: bool = False
+    df: DataFrame, cat_var: str, models: Optional[List] = None, inplace: bool = False
 ) -> DataFrame:
     """Add default cat2cat columns to a `data.frame`
 
@@ -50,6 +75,14 @@ def dummy_c2c(
         The base added columns if not already exist: index_c2c, g_new_c2c, rep_c2c, wei_naive_c2c, wei_freq_c2c.
         Additionaly ml models connected columns like wei_MLNAME_c2c.
     """
+    assert isinstance(cat_var, str), "cat_var argument has to be a str"
+    assert isinstance(df, DataFrame) and (
+        (cat_var in df.columns)
+    ), "df argument has to be a DataFrame with the cat_var column"
+    assert (models == None) or isinstance(
+        models, list
+    ), "models has to be None or list of str (ml models)"
+    assert isinstance(inplace, bool), "inplace argument has to be a bool"
 
     df2 = df if inplace else df.copy()
     nrow_df = df2.shape[0]

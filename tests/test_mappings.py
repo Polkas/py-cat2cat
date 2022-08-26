@@ -61,6 +61,12 @@ def test_get_freqs_multiplier():
     assert actual == expected
 
 
+def test_get_freqs_multiplier_len():
+    seed(1234)
+    with pytest.raises(ValueError):
+        get_freqs(choice(5, 100, replace=True), choice(5, 90, replace=True))
+
+
 # get_mappings
 
 

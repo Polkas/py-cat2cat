@@ -75,7 +75,7 @@ data_final = concat([c2c["old"], c2c["new"]])
 
 with 4 periods , one mapping table and backward direction:
 
-```
+```python
 from cat2cat.cat2cat_utils import dummy_c2c
 
 o_2006 = occup.loc[occup.year == 2006, :].copy()
