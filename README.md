@@ -2,7 +2,7 @@
 [![Build Status](https://github.com/polkas/py-cat2cat/workflows/ci-cd/badge.svg)](https://github.com/polkas/py-cat2cat/actions)
 [![codecov](https://codecov.io/gh/Polkas/py-cat2cat/branch/main/graph/badge.svg)](https://codecov.io/gh/Polkas/py-cat2cat)
 
-Unifying an inconsistent coded categorical variable in a panel/longtitudal dataset.
+Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset.
 
 ## Installation
 
@@ -12,8 +12,7 @@ $ pip install cat2cat
 
 ## Usage
 
-
-For more examples and descriptions please vist [the example notebook](https://py-cat2cat.readthedocs.io/en/latest/example.html)
+For more examples and descriptions please vist [**the example notebook**](https://py-cat2cat.readthedocs.io/en/latest/example.html)
 
 ### load example data
 
@@ -49,6 +48,7 @@ from pandas import DataFrame
 o_old = occup.loc[occup.year == 2008, :].copy()
 o_new = occup.loc[occup.year == 2010, :].copy()
 
+# dataclasses a core arguments for cat2cat function
 data = cat2cat_data(old = o_old, new = o_new, "code", "code", "year")
 mappings = cat2cat_mappings(trans, "backward")
 

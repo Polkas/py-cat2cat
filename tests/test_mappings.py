@@ -123,9 +123,10 @@ def test_get_mappings_DataFrame():
     assert actual == expected
 
 
-def test_get_mappings_int():
+@pytest.mark.parametrize("x", [1, "", [], {}])
+def test_get_mappings_wrong(x):
     with pytest.raises(AttributeError):
-        get_mappings(1)
+        get_mappings(x)
 
 
 class class_with_shape:

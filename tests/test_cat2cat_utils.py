@@ -6,6 +6,7 @@ from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 from cat2cat.cat2cat_utils import prune_c2c, dummy_c2c
 
 from pandas import DataFrame
+from numpy import argmax, arange
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 
@@ -23,8 +24,25 @@ mappings = cat2cat_mappings(trans, "backward")
 c2c = cat2cat(data, mappings)
 
 
-def test_prune():
-    assert isinstance(prune_c2c(c2c["old"], lambda x: [e > 0 for e in x]), DataFrame)
+def test_prune_nonzero():
+    pruned_old = prune_c2c(c2c["old"], lambda x: x > 0)
+    assert isinstance(pruned_old, DataFrame)
+    assert c2c["old"].shape[0] >= pruned_old.shape[0]
+    assert pruned_old.shape[0] == 163262
+
+
+def test_prune_highest():
+    pruned_old = prune_c2c(c2c["old"], lambda x: x == max(x))
+    assert isinstance(pruned_old, DataFrame)
+    assert pruned_old.shape[0] == 18077
+    assert int(pruned_old["wei_freq_c2c"].sum().round()) == o_old.shape[0]
+
+
+def test_prune_highest1():
+    pruned_old = prune_c2c(c2c["old"], lambda x: arange(len(x)) == argmax(x))
+    assert isinstance(pruned_old, DataFrame)
+    assert pruned_old.shape[0] == o_old.shape[0]
+    assert int(pruned_old["wei_freq_c2c"].sum().round()) == o_old.shape[0]
 
 
 def test_dummy_return():

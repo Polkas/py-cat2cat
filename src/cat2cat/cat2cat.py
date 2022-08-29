@@ -1,5 +1,6 @@
-from pandas import DataFrame, merge
-from numpy import arange, repeat, array, isin, setdiff1d, in1d
+import queue
+from pandas import DataFrame, merge, concat
+from numpy import arange, repeat, array, isin, setdiff1d, in1d, intersect1d
 
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 from cat2cat.datasets import load_trans, load_occup
@@ -9,7 +10,7 @@ from cat2cat.cat2cat_utils import dummy_c2c
 from sklearn.base import BaseEstimator
 
 from dataclasses import dataclass
-from typing import Optional, Any
+from typing import Optional, Any, Dict
 
 __all__ = ["cat2cat"]
 
@@ -20,9 +21,9 @@ def cat2cat(
     """Automatic mapping in a panel dataset - cat2cat procedure
 
     Args:
-        data (cat2cat_data): dataclass with data related arguments
-        mappings (cat2cat_mappings): dataclass with mappings related arguments
-        ml (Optional[cat2cat_ml]): dataclass with ml related arguments
+        data (cat2cat_data): dataclass with data related arguments.
+        mappings (cat2cat_mappings): dataclass with mappings related arguments.
+        ml (Optional[cat2cat_ml]): dataclass with ml related arguments.
 
     Returns:
         dict: with 2 DataFrames, old and new.
@@ -59,46 +60,43 @@ def cat2cat(
         ml, cat2cat_ml
     ), "ml arg has to be cat2cat_ml instance"
 
-    is_direct = not data.id_var is None
-    index_target_direct = None
-    index_target_cat2cat = None
-
-    # if direct split
-
     mapps = mappings.get_mappings()
 
     if mappings.direction == "forward":
-        cat_var_base = data.cat_var_old
-        cat_var_target = data.cat_var_new
-        base_df = data.old
-        target_df = data.new  # if direct
-        cat_mid = None  # if direct
-        mapp = mapps["to_old"]
         target_name = "new"
         base_name = "old"
     elif mappings.direction == "backward":
-        cat_var_base = data.cat_var_new
-        cat_var_target = data.cat_var_old
-        base_df = data.new
-        target_df = data.old  # if direct
-        cat_mid = None  # if direct
-        mapp = mapps["to_new"]
         target_name = "old"
         base_name = "new"
 
+    cat_var_base = getattr(data, "cat_var_" + base_name)
+    cat_var_target = getattr(data, "cat_var_" + target_name)
+    base_df = getattr(data, base_name).copy()
+    target_df = getattr(data, target_name).copy()
+    mid_df = None
+    mapp = mapps["to_" + base_name]
+
+    is_direct = not data.id_var is None
+    if is_direct:
+        id_inner = intersect1d(base_df[data.id_var], target_df[data.id_var])
+        id_outer = setdiff1d(target_df[data.id_var], base_df[data.id_var])
+        mid_df = dummy_c2c(
+            target_df.loc[target_df[data.id_var].isin(id_inner), :].copy(),
+            cat_var_base,
+        )
+        target_df = target_df.loc[target_df[data.id_var].isin(id_outer)].copy()
+
+        tos = data.old.loc[:, [data.id_var, data.cat_var_old]].merge(
+            data.new.loc[:, [data.id_var, data.cat_var_new]], on=data.id_var
+        )
+        tos.columns = ["id", "cat_old", "cat_new"]
+        tos_dict = dict(zip(tos["id"], tos["cat_" + base_name]))
+        mid_df["g_new_c2c"] = [tos_dict.get(e) for e in mid_df[data.id_var]]
+
     # frequencies
-    user_freqs: Optional[dict[Any, int]] = mappings.freqs
-    freqs: dict[Any, int]
-    if user_freqs == None:
-        if "wei_freq_c2c" in base_df.columns:
-            freqs = dict()
-            L = list(zip(base_df[cat_var_base], base_df["wei_freq_c2c"]))
-            for k, v in L:
-                freqs[k] = freqs.get(k, 0) + v
-        else:
-            freqs = get_freqs(base_df[cat_var_base].values)
-    else:
-        freqs = user_freqs
+    freqs = _resolve_frequencies(
+        base_df, cat_var_base, mappings.freqs, data.multiplier_var
+    )
     # frequencies per category
     mapp_f = cat_apply_freq(mapp, freqs)
 
@@ -126,28 +124,25 @@ def cat2cat(
 
     # ML
     if ml is not None:
+        for m in ml.models:
+            ml_name = type(m).__name__
+            ml_colname = "wei_" + ml_name + "_c2c"
+            target_df[ml_colname] = target_df["wei_freq_c2c"]
+            base_df[ml_colname] = 1
+            if is_direct:
+                mid_df[ml_colname] = 1
+
         _cat2cat_ml(ml, mapp, target_df, cat_var_target, base_df)
 
     # Final
     res = dict()
-    res[target_name] = target_df
+    res[target_name] = concat([target_df, mid_df])
     res[base_name] = base_df
 
     return res
 
 
-def _cat2cat_direct(target_df, base_df):
-    pass
-
-
 def _cat2cat_ml(ml, mapp, target_df, cat_var_target, base_df):
-
-    for m in ml.models:
-        ml_name = type(m).__name__
-        ml_colname = "wei_" + ml_name + "_c2c"
-        target_df[ml_colname] = target_df["wei_freq_c2c"]
-        base_df[ml_colname] = 1
-
     for target_cat in list(mapp.keys()):
         base_cats = mapp[target_cat]
         ml_cat_var = ml.data[ml.cat_var]
@@ -189,3 +184,27 @@ def _cat2cat_ml(ml, mapp, target_df, cat_var_target, base_df):
                 target_df.loc[target_cat_index, ml_colname] = p_order["value"].values
             except:
                 None
+
+
+def _resolve_frequencies(
+    base_df: DataFrame,
+    cat_var_base: str,
+    user_freqs: Optional[Dict[Any, int]],
+    multiplier_var: str,
+):
+    """Resolve the frequencies"""
+    freqs: Dict[Any, int] = dict()
+    if user_freqs == None:
+        if "wei_freq_c2c" in base_df.columns:
+            freqs = (
+                base_df.groupby(cat_var_base)
+                .apply(lambda x: sum(x["wei_freq_c2c"] * x.get(multiplier_var, 1)))
+                .to_dict()
+            )
+        else:
+            freqs = get_freqs(
+                base_df[cat_var_base].values, base_df.get(multiplier_var, None)
+            )
+    else:
+        freqs = user_freqs
+    return freqs

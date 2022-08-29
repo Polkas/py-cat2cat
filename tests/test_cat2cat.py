@@ -1,5 +1,5 @@
 import pytest
-from cat2cat.datasets import load_trans, load_occup
+from cat2cat.datasets import load_trans, load_occup, load_verticals
 from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 from cat2cat.cat2cat_utils import dummy_c2c
@@ -89,6 +89,43 @@ def test_cat2cat_multi():
     ]
 
 
+verticals = load_verticals()
+
+
+def test_cat2cat_direct():
+    vert_old = verticals.loc[verticals["v_date"] == "2020-04-01", :]
+    vert_new = verticals.loc[verticals["v_date"] == "2020-05-01", :]
+
+    ## extract mapping (transition) table from data using identifier
+    trans_v = (
+        vert_old.merge(vert_new, on="ean", how="inner")
+        .loc[:, ["vertical_x", "vertical_y"]]
+        .drop_duplicates()
+    )
+
+    data = cat2cat_data(
+        old=vert_old,
+        new=vert_new,
+        id_var="ean",
+        cat_var_old="vertical",
+        cat_var_new="vertical",
+        time_var="v_date",
+    )
+    mappings = cat2cat_mappings(trans_v, "backward")
+
+    verts = cat2cat(data=data, mappings=mappings)
+
+    assert verts["old"]["wei_freq_c2c"].sum() == vert_old.shape[0]
+
+    mappings = cat2cat_mappings(trans_v, "forward")
+
+    verts = cat2cat(data=data, mappings=mappings)
+
+    assert verts["new"]["wei_freq_c2c"].sum() == vert_new.shape[0]
+
+
+# Benchmark
+
 # import time
 # res = list()
 # for i in range(5):
@@ -97,6 +134,7 @@ def test_cat2cat_multi():
 #     res.append(time.time() - start_time)
 # sum(res) / 5
 
+# Profiling
 
 # import cProfile
 # cProfile.run("cat2cat(data, mappings, ml)", "program.prof")

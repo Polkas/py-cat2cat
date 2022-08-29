@@ -5,6 +5,7 @@ description = "Unifying an inconsistent coded categorical variable in a panel/lo
 authors = ["Maciej Nasinski"]
 license = "MIT"
 readme = "README.md"
+include = ["CHANGELOG.md"]
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]

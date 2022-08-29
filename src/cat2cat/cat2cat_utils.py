@@ -1,11 +1,11 @@
 from pandas import DataFrame
-from numpy import arange, concatenate
+from numpy import arange, concatenate, array, ndarray
 from typing import Optional, Callable, List
 
 
 def prune_c2c(
     df: DataFrame,
-    prune_fun: Callable[[List[float]], List[bool]],
+    prune_fun: Callable[[ndarray], ndarray],
     wei_var: str = "wei_freq_c2c",
     index_var: str = "index_c2c",
     inplace: bool = False,
@@ -14,12 +14,17 @@ def prune_c2c(
 
     Args:
         df (DataFrame): a specific period from the cat2cat function result.
-        prune_fun (callable): a function to process a vector of weights and return a vector of boolean of the same length.
+        prune_fun (callable): a function to process a 1D-array of weights (float) and return a 1D-array of boolean of the same length.
+        The weighs will be reweighted automatically to still to sum to one per each original observation.
         wei_var (str): By default "wei_freq_c2c".
         index_var (str): By default "index_c2c".
         inplace (bool): Whether to perform the operation inplace. By default False.
     Returns:
         DataFrame: df argument with possibly reduced number of rows.
+    Note:
+        - non-zero prune_fun - lambda x: x > 0
+        - highest1 prune_fun - lambda x: arange(len(x)) == argmax(x)
+        - highest prune_fun - lambda x: x == max(x)
 
     >>> from cat2cat import cat2cat
     >>> from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
@@ -32,7 +37,13 @@ def prune_c2c(
     >>> data_c2c = cat2cat_data(o_old, o_new, "code", "code", "year")
     >>> mappings_c2c = cat2cat_mappings(trans, "forward")
     >>> c2c = cat2cat(data_c2c, mappings_c2c)
-    >>> prune_c2c(c2c["old"], lambda x: [e > 0 for e in x])
+    >>> #
+    >>> # non-zero - lambda x: x > 0
+    >>> # highest1 - lambda x: arange(len(x)) == argmax(x)
+    >>> # highest - lambda x: x == max(x)
+    >>> #
+    >>> # non-zero
+    >>> prune_c2c(c2c["old"], lambda x: x > 0)
               id        age    sex  edu        exp  ...  index_c2c  g_new_c2c  rep_c2c wei_naive_c2c  wei_freq_c2c
     ...
     """
@@ -45,14 +56,17 @@ def prune_c2c(
     assert isinstance(inplace, bool), "inplace argument has to be a bool"
 
     df2 = df if inplace else df.copy()
-
     final_rows = (
         df2.groupby(index_var, sort=False)
         .apply(lambda x: prune_fun(x[wei_var].values))
         .values
     )
-
-    return df2.loc[concatenate(final_rows)]
+    df2 = df2.loc[concatenate(final_rows)]
+    # reweight
+    df2[wei_var] = (
+        df2.groupby(index_var, sort=False)[wei_var].apply(lambda x: x / sum(x)).values
+    )
+    return df2
 
 
 def dummy_c2c(
