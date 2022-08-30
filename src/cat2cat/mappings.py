@@ -53,6 +53,7 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[str, List[Any]]
     for e in from_new:
         try:
             idx = ss == e
+            # sorted so results are stable
             to_old[e] = sorted(list(set(ff[idx])))
         except:
             to_old[e] = []
@@ -61,6 +62,7 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[str, List[Any]]
     for e in from_old:
         try:
             idx = ff == e
+            # sorted so results are stable
             to_new[e] = sorted(list(set(ss[idx])))
         except:
             to_new[e] = []

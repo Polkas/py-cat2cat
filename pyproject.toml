@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "cat2cat"
-version = "0.1.0.9000"
-description = "Unifying an inconsistent coded categorical variable in a panel/longtitudal dataset."
+version = "0.1.0"
+description = "Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset."
 authors = ["Maciej Nasinski"]
 license = "MIT"
 readme = "README.md"

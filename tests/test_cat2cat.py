@@ -1,4 +1,3 @@
-import pytest
 from cat2cat.datasets import load_trans, load_occup, load_verticals
 from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
@@ -10,6 +9,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+
+import pytest
 
 
 def int_round(x: float) -> int:
@@ -115,13 +116,13 @@ def test_cat2cat_direct():
 
     verts = cat2cat(data=data, mappings=mappings)
 
-    assert verts["old"]["wei_freq_c2c"].sum() == vert_old.shape[0]
+    assert int_round(verts["old"]["wei_freq_c2c"].sum()) == vert_old.shape[0]
 
     mappings = cat2cat_mappings(trans_v, "forward")
 
     verts = cat2cat(data=data, mappings=mappings)
 
-    assert verts["new"]["wei_freq_c2c"].sum() == vert_new.shape[0]
+    assert int_round(verts["new"]["wei_freq_c2c"].sum()) == vert_new.shape[0]
 
 
 # Benchmark

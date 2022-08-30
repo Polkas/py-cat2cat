@@ -1,4 +1,5 @@
-# cat2cat <a href='https://github.com/polkas/py-cat2cat'><img src='https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/cat2cat_logo.png' align="right" width="200px" /></a>
+# cat2cat 
+<a href='https://github.com/polkas/py-cat2cat'><img src='https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/cat2cat_logo.png' align="right" width="200px" style="margin:5px;"/></a>
 [![Build Status](https://github.com/polkas/py-cat2cat/workflows/ci-cd/badge.svg)](https://github.com/polkas/py-cat2cat/actions)
 [![codecov](https://codecov.io/gh/Polkas/py-cat2cat/branch/main/graph/badge.svg)](https://codecov.io/gh/Polkas/py-cat2cat)
 

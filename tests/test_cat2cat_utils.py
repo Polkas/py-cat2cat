@@ -1,5 +1,3 @@
-import pytest
-
 from cat2cat.datasets import load_trans, load_occup
 from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
@@ -8,7 +6,6 @@ from cat2cat.cat2cat_utils import prune_c2c, dummy_c2c
 from pandas import DataFrame
 from numpy import argmax, arange
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-
 
 trans = load_trans()
 

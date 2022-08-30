@@ -1,7 +1,5 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## v0.1.0 (30/08/2022)
 
-## 0.1.0.9000
-
-- First release of `cat2cat`!
+- First test release of `cat2cat`!

@@ -1,9 +1,9 @@
-# from cat2cat import cat2cat
-import pytest
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 from cat2cat.datasets import load_trans, load_occup
 from numpy import array
 from numpy.random import choice, seed
+
+import pytest
 
 occup = load_occup()
 trans = load_trans()
