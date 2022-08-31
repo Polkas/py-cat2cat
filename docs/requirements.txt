@@ -1,6 +1,6 @@
-myst-nb
-sphinx-autoapi
-sphinx-rtd-theme
+myst-nb==0.16.0
+sphinx-autoapi==1.9.0
+sphinx-rtd-theme==1.0.0
 pandas 
 numpy
 sklearn

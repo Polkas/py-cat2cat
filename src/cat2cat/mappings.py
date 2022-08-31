@@ -79,7 +79,7 @@ def get_freqs(
     Args:
         x (Sequence): a list like, categorical variable to summarize.
         multiplier (Optional[Sequence]): a list like, how many times to repeat certain value, additional weights.
-        Have the same length as the x argument. Defaults to None.
+                                         Have the same length as the x argument. Defaults to None.
 
     Returns:
         dict: with unique values and their counts

@@ -15,7 +15,7 @@ def prune_c2c(
     Args:
         df (DataFrame): a specific period from the cat2cat function result.
         prune_fun (callable): a function to process a 1D-array of weights (float) and return a 1D-array of boolean of the same length.
-        The weighs will be reweighted automatically to still to sum to one per each original observation.
+                              The weighs will be reweighted automatically to still to sum to one per each original observation.
         wei_var (str): By default "wei_freq_c2c".
         index_var (str): By default "index_c2c".
         inplace (bool): Whether to perform the operation inplace. By default False.
@@ -81,7 +81,7 @@ def dummy_c2c(
         df (DataFrame): a specific period from the cat2cat function result.
         cat_car (str): name of categorial variable
         models (Optional[list]): an optional list of str, ml models applied (class name).
-        By default turn off, equal None.
+                                 By default turn off, equal None.
         inplace (bool): Whether to perform the operation inplace. By default False.
 
     Returns:

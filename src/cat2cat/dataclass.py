@@ -35,6 +35,12 @@ class cat2cat_data:
         assert isinstance(self.cat_var_new, str) and (
             self.cat_var_new in self.new.columns
         ), "cat_var_new has to be a str and the new DataFrame column"
+        assert isinstance(self.time_var, str) and (
+            (self.time_var in self.new.columns) and (self.time_var in self.old.columns)
+        ), "time_var has to be a str and in the both (old and new) DataFrames"
+        assert (len(self.old[self.time_var].unique()) == 1) and (
+            len(self.new[self.time_var].unique()) == 1
+        ), "time_var has to have only the one period in each DataFrame (old and new)"
         assert (
             isinstance(self.id_var, str)
             and (
@@ -42,10 +48,16 @@ class cat2cat_data:
             )
         ) or (
             self.id_var is None
-        ), "id_var has to be a str and the new DataFrame column, or None"
-        assert isinstance(self.multiplier_var, str) or (
+        ), "id_var has to be a str and in the both (old and new) DataFrames, or None"
+        assert (
+            isinstance(self.multiplier_var, str)
+            and (
+                (self.multiplier_var in self.new.columns)
+                or (self.multiplier_var in self.old.columns)
+            )
+        ) or (
             self.multiplier_var == None
-        ), "multiplier_var has to be a str or None"
+        ), "multiplier_var has to be a str and in one of (old and new) DataFrames, or None"
 
 
 @dataclass(frozen=True)
@@ -56,8 +68,8 @@ class cat2cat_mappings:
         trans (DataFrame): mapping (transition) table (with 2 columns, old and new encoding) - all categories for cat_var in old and new datasets have to be included.
         diretion (str): "backward" or "forward"
         freqs (Optional[str]): If It is not provided then is assessed automatically.
-        Artificial counts for each variable level in the base period.
-        It is optional nevertheless will be often needed, as gives more control.
+                               Artificial counts for each variable level in the base period.
+                               It is optional nevertheless will be often needed, as gives more control.
 
     Note:
         The mapping (transition) table should to have a candidate for each category from the targeted for an update period.
@@ -78,7 +90,7 @@ class cat2cat_mappings:
         ], "direction has to be one of 'forward' or 'backward'"
         assert (self.freqs == None) or isinstance(
             self.freqs, dict
-        ), "freqs has to be a pandas.DataFrame with 2 columns"
+        ), "freqs has to be a pandas.DataFrame with 2 columns, or None"
 
 
 @dataclass(frozen=True)
@@ -90,7 +102,7 @@ class cat2cat_ml:
         cat_var (str): the dependent variable name.
         features (List[str]): list of features names where all have to be numeric or logical
         models (List[ClassifierMixin]): scikit-learn instances (classes inherit from ClassifierMixin) like,
-         RandomForestClassifier or LinearDiscriminantAnalysis
+                                        RandomForestClassifier() or LinearDiscriminantAnalysis() instances.
     """
 
     data: DataFrame
@@ -100,12 +112,21 @@ class cat2cat_ml:
 
     def __post_init__(self):
         assert isinstance(self.data, DataFrame), "data has to be a pandas.DataFrame"
-        assert isinstance(self.cat_var, str), "cat_var has to be a str"
-        assert isinstance(self.features, list), "features has to be a list"
-        assert isinstance(self.models, list), "models has to be a list"
+        assert isinstance(self.cat_var, str) and (
+            self.cat_var in self.data.columns
+        ), "cat_var has to be a str and a data argument column"
+        assert isinstance(self.features, list) and all(
+            [e in self.data.columns for e in self.features]
+        ), "features has to be a list and each have to be a column in the data argument."
+        assert isinstance(self.models, list) and (
+            len(self.models) > 0
+        ), "models has to be a list of length at least 1."
         assert all(
             [issubclass(type(e), ClassifierMixin) for e in self.models]
         ), "models arg elements have to be subclass of ClassifierMixin each"
         assert all(
+            [hasattr(e, "fit") for e in self.models]
+        ), "each model has to have the fit method"
+        assert all(
             [hasattr(e, "predict_proba") for e in self.models]
-        ), "models have to have the (multi-label) predict_proba method"
+        ), "each model has to have the (multi-label) predict_proba method"

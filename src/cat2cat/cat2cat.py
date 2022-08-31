@@ -17,8 +17,11 @@ def cat2cat(
 
     Args:
         data (cat2cat_data): dataclass with data related arguments.
+            Please check out the `cat2cat.dataclass.cat2cat_data` for more information.
         mappings (cat2cat_mappings): dataclass with mappings related arguments.
+            Please check out the `cat2cat.dataclass.cat2cat_mappings` for more information.
         ml (Optional[cat2cat_ml]): dataclass with ml related arguments.
+            Please check out the `cat2cat.dataclass.cat2cat_ml` for more information.
 
     Returns:
         dict: with 2 DataFrames, old and new.
@@ -30,7 +33,8 @@ def cat2cat(
         When ml model is broken then weights from simple frequencies are taken.
         `knn` method is recommended for smaller datasets.
 
-        2. `mappings.trans` arg columns and the `data.cat_var` column have to be of the same type.
+        2. Please be sure that the categorical variable is of the same type in all cases.
+        `mappings.trans` arg columns and the `data.cat_var` column have to be of the same type.
         When ml part applied `ml.cat_var` has to have the same type too.
 
     >>> from cat2cat import cat2cat
@@ -69,7 +73,7 @@ def cat2cat(
     cat_var_target = getattr(data, "cat_var_" + target_name)
     base_df = getattr(data, base_name).copy()
     target_df = getattr(data, target_name).copy()
-    mid_df = None
+    mid_df = DataFrame()
     mapp = mapps["to_" + base_name]
 
     is_direct = not data.id_var is None
@@ -128,7 +132,7 @@ def cat2cat(
             if is_direct:
                 mid_df[ml_colname] = 1
 
-        _cat2cat_ml(ml, mapp, target_df, cat_var_target, base_df)
+        _cat2cat_ml(ml, mapp, target_df, cat_var_target)
 
     # Final
     res = dict()
@@ -138,7 +142,8 @@ def cat2cat(
     return res
 
 
-def _cat2cat_ml(ml, mapp, target_df, cat_var_target, base_df):
+def _cat2cat_ml(ml, mapp, target_df, cat_var_target):
+    """cat2cat ml optional part"""
     for target_cat in list(mapp.keys()):
         base_cats = mapp[target_cat]
         ml_cat_var = ml.data[ml.cat_var]
@@ -186,7 +191,7 @@ def _resolve_frequencies(
     base_df: DataFrame,
     cat_var_base: str,
     user_freqs: Optional[Dict[Any, int]],
-    multiplier_var: str,
+    multiplier_var: Optional[str],
 ):
     """Resolve the frequencies"""
     freqs: Dict[Any, int] = dict()
