@@ -46,9 +46,10 @@ def cat2cat(
     >>> occup = load_occup()
     >>> o_old = occup.loc[occup.year == 2008, :].copy()
     >>> o_new = occup.loc[occup.year == 2010, :].copy()
-    >>> data_c2c = cat2cat_data(o_old, o_new, "code", "code", "year")
-    >>> mappings_c2c = cat2cat_mappings(trans, "forward")
-    >>> cat2cat(data_c2c, mappings_c2c)
+    >>> data = cat2cat_data(old = o_old, new = o_new, cat_var_old = "code",
+    ...                         cat_var_new = "code", time_var = "year")
+    >>> mappings = cat2cat_mappings(trans = trans, direction = "forward")
+    >>> cat2cat(data = data, mappings = mappings)
     {...
 
     """

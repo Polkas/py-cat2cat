@@ -1,10 +1,14 @@
 [tool.poetry]
 name = "cat2cat"
-version = "0.1.1"
+version = "0.1.1.9000"
 description = "Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset."
 authors = ["Maciej Nasinski"]
 license = "MIT"
 readme = "README.md"
+homepage = "https://github.com/polkas/py-cat2cat"
+repository = "https://github.com/polkas/py-cat2cat"
+documentation = "https://py-cat2cat.readthedocs.io/en/latest/"
+keywords = ["panel", "categorical", "longtitudal", "inconsistent", "cat2cat"]
 include = ["CHANGELOG.md"]
 
 [build-system]
@@ -41,7 +45,3 @@ upload_to_release = true                    # auto-create GitHub release
 upload_to_pypi = false                      # don't auto-upload to PyPI
 remove_dist = false                         # don't remove dists
 patch_without_tag = true                    # patch release by default
-
-[project.urls]
-"Homepage" = "https://github.com/polkas/py-cat2cat"
-"Bug Tracker" = "https://github.com/polkas/py-cat2cat"

@@ -123,20 +123,3 @@ def test_cat2cat_direct():
     verts = cat2cat(data=data, mappings=mappings)
 
     assert int_round(verts["new"]["wei_freq_c2c"].sum()) == vert_new.shape[0]
-
-
-# Benchmark
-
-# import time
-# res = list()
-# for i in range(5):
-#     start_time = time.time()
-#     cat2cat(data, mappings, ml)
-#     res.append(time.time() - start_time)
-# sum(res) / 5
-
-# Profiling
-
-# import cProfile
-# cProfile.run("cat2cat(data, mappings, ml)", "program.prof")
-# snakeviz program.prof

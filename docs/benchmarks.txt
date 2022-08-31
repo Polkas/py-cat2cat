@@ -1,0 +1,38 @@
+
+# Benchmark
+
+from cat2cat import cat2cat
+from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
+from sklearn.ensemble import RandomForestClassifier
+from cat2cat.datasets import load_trans, load_occup
+
+trans = load_trans()
+occup = load_occup()
+o_old = occup.loc[occup.year == 2008, :].copy()
+o_new = occup.loc[occup.year == 2010, :].copy()
+data = cat2cat_data(old = o_old, new = o_new, cat_var_old = "code",
+                    cat_var_new = "code", time_var = "year")
+mappings = cat2cat_mappings(trans = trans, direction = "forward")
+
+## Optional
+ml = cat2cat_ml(
+    data = o_new, 
+    cat_var = "code", 
+    features = ["salary", "age", "edu"], 
+    models = [KNeighborsClassifier()]
+)
+
+
+import time
+res = list()
+for i in range(5):
+    start_time = time.time()
+    cat2cat(data, mappings, ml)
+    res.append(time.time() - start_time)
+sum(res) / 5
+
+# Profiling
+
+import cProfile
+cProfile.run("cat2cat(data, mappings, ml)", "program.prof")
+snakeviz program.prof

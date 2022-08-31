@@ -2,6 +2,7 @@
 <a href='https://github.com/polkas/py-cat2cat'><img src='https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/cat2cat_logo.png' align="right" width="200px" style="margin:5px;"/></a>
 [![Build Status](https://github.com/polkas/py-cat2cat/workflows/ci/badge.svg)](https://github.com/polkas/py-cat2cat/actions)
 [![codecov](https://codecov.io/gh/Polkas/py-cat2cat/branch/main/graph/badge.svg)](https://codecov.io/gh/Polkas/py-cat2cat)
+[![pypi](https://img.shields.io/pypi/v/cat2cat.svg)](https://pypi.org/project/cat2cat/)
 
 Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset.
 
@@ -50,10 +51,16 @@ o_old = occup.loc[occup.year == 2008, :].copy()
 o_new = occup.loc[occup.year == 2010, :].copy()
 
 # dataclasses a core arguments for cat2cat function
-data = cat2cat_data(old = o_old, new = o_new, "code", "code", "year")
-mappings = cat2cat_mappings(trans, "backward")
+data = cat2cat_data(
+    old = o_old, 
+    new = o_new,
+    cat_var_old = "code", 
+    cat_var_new = "code", 
+    time_var = "year"
+)
+mappings = cat2cat_mappings(trans = trans, direction = "backward")
 
-c2c = cat2cat(data, mappings)
+c2c = cat2cat(data = data, mappings = mappings)
 data_final = concat([c2c["old"], c2c["new"]])
 ```
 
