@@ -1,15 +1,10 @@
-import queue
-from pandas import DataFrame, merge, concat
-from numpy import arange, repeat, array, isin, setdiff1d, in1d, intersect1d
+from pandas import DataFrame, concat
+from numpy import arange, repeat, setdiff1d, in1d, intersect1d
 
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
-from cat2cat.datasets import load_trans, load_occup
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 from cat2cat.cat2cat_utils import dummy_c2c
 
-from sklearn.base import BaseEstimator
-
-from dataclasses import dataclass
 from typing import Optional, Any, Dict
 
 __all__ = ["cat2cat"]
@@ -47,7 +42,7 @@ def cat2cat(
     >>> o_old = occup.loc[occup.year == 2008, :].copy()
     >>> o_new = occup.loc[occup.year == 2010, :].copy()
     >>> data = cat2cat_data(old = o_old, new = o_new, cat_var_old = "code",
-    ...                         cat_var_new = "code", time_var = "year")
+    ...                     cat_var_new = "code", time_var = "year")
     >>> mappings = cat2cat_mappings(trans = trans, direction = "forward")
     >>> cat2cat(data = data, mappings = mappings)
     {...
@@ -61,7 +56,7 @@ def cat2cat(
         ml, cat2cat_ml
     ), "ml arg has to be cat2cat_ml instance"
 
-    mapps = mappings.get_mappings()
+    mapps = get_mappings(mappings.trans)
 
     if mappings.direction == "forward":
         target_name = "new"

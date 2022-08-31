@@ -1,5 +1,5 @@
 from pandas import DataFrame
-from numpy import ndarray, unique, repeat, around, array, round
+from numpy import ndarray, unique, repeat, array, round
 
 from collections.abc import Iterable
 from typing import Union, Optional, Any, List, Dict, Sequence

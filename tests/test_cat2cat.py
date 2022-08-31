@@ -2,15 +2,10 @@ from cat2cat.datasets import load_trans, load_occup, load_verticals
 from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 from cat2cat.cat2cat_utils import dummy_c2c
-from pandas import DataFrame, concat
+from pandas import concat
 from numpy import round
 
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-
-import pytest
 
 
 def int_round(x: float) -> int:

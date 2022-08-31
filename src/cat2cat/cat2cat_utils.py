@@ -1,5 +1,5 @@
 from pandas import DataFrame
-from numpy import arange, concatenate, array, ndarray
+from numpy import arange, concatenate, ndarray
 from typing import Optional, Callable, List
 
 

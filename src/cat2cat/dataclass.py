@@ -1,10 +1,7 @@
-from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
-from cat2cat.datasets import load_trans, load_occup
-
 from pandas import DataFrame
 from sklearn.base import ClassifierMixin
 from dataclasses import dataclass
-from typing import Type, List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union
 
 
 @dataclass(frozen=True)
@@ -70,9 +67,6 @@ class cat2cat_mappings:
     trans: DataFrame
     direction: str
     freqs: Union[Dict[Any, int], None] = None
-
-    def get_mappings(self) -> Dict[str, Dict[str, List[Any]]]:
-        return get_mappings(self.trans)
 
     def __post_init__(self):
         assert isinstance(self.trans, DataFrame), "trans has to be a pandas.DataFrame"

@@ -4,6 +4,8 @@
 
 ### Miscellaneous
 
+- Removed `get_mappings` method from the `cat2cat_mappings` dataclass.
+- Removed not needed import calls.
 - Created the project description and sidebar on pypi.
 - Added pypi badge.
 

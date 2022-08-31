@@ -1,6 +1,5 @@
 from importlib_resources import files, as_file
-import numpy as np
-from pandas import read_pickle, read_csv
+from pandas import read_pickle
 import cat2cat.data
 
 __all__ = ["load_trans", "load_occup", "load_verticals"]

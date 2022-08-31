@@ -1,7 +1,5 @@
 from cat2cat.datasets import load_trans, load_occup
-from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
-from pandas import DataFrame
 from sklearn.ensemble import RandomForestClassifier
 
 from dataclasses import FrozenInstanceError
