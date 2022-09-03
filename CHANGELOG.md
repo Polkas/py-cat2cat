@@ -2,6 +2,14 @@
 
 ## v0.1.3.9000
 
+### Fix
+
+- Fixed README example, pandas.concat was not imported.
+
+### Miscellaneous
+
+- Added more comments for code examples.
+
 ## v0.1.3 (01/09/2022)
 
 ### Fix

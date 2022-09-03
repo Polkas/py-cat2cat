@@ -28,14 +28,19 @@ occup = load_occup()
 ### Low-level functions
 
 ```python
-# Low-level functions
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 
+# convert the mapping table to two association lists
 mappings = get_mappings(trans)
+# get a variable levels freqencies
 codes_new = occup.code[occup.year == 2010].values
 freqs = get_freqs(codes_new)
+# apply the frequencies to the (one) association list
 mapp_new_p = cat_apply_freq(mappings["to_new"], freqs)
+
+# mappings for a specific category
 mappings["to_new"]['3481']
+# probability mappings for a specific category
 mapp_new_p['3481']
 ```
 
@@ -45,12 +50,14 @@ mapp_new_p['3481']
 from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 
-from pandas import DataFrame, concat
+from pandas import concat
 
+# split the panel by the time variale
+# here only two periods
 o_old = occup.loc[occup.year == 2008, :].copy()
 o_new = occup.loc[occup.year == 2010, :].copy()
 
-# dataclasses core arguments for cat2cat function
+# dataclasses, core arguments for the cat2cat function
 data = cat2cat_data(
     old = o_old, 
     new = o_new,
@@ -60,7 +67,9 @@ data = cat2cat_data(
 )
 mappings = cat2cat_mappings(trans = trans, direction = "backward")
 
+# apply the cat2cat procedure
 c2c = cat2cat(data = data, mappings = mappings)
+# pandas.concat used to bind per period datasets
 data_final = concat([c2c["old"], c2c["new"]])
 ```
 

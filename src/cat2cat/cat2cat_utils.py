@@ -2,6 +2,8 @@ from pandas import DataFrame
 from numpy import arange, concatenate, ndarray
 from typing import Optional, Callable, List
 
+__all__ = ["prune_c2c", "dummy_c2c"]
+
 
 def prune_c2c(
     df: DataFrame,

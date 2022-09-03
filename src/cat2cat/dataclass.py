@@ -3,6 +3,8 @@ from sklearn.base import ClassifierMixin
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional, Union
 
+__all__ = ["cat2cat_data", "cat2cat_mappings", "cat2cat_ml"]
+
 
 @dataclass(frozen=True)
 class cat2cat_data:

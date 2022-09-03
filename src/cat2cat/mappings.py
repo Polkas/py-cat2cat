@@ -4,6 +4,8 @@ from numpy import ndarray, unique, repeat, array, round
 from collections.abc import Iterable
 from typing import Union, Optional, Any, List, Dict, Sequence
 
+__all__ = ["get_mappings", "cat_apply_freq", "get_freqs"]
+
 
 def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[str, List[Any]]]:
     """Transforming a mapping table with mappings to two associative lists
