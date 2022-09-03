@@ -48,26 +48,22 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[str, List[Any]]
     else:
         raise (TypeError)
 
+    assert ff.dtype == ss.dtype
+
     from_old = set(ff)
     from_new = set(ss)
 
     to_old = dict()
     for e in from_new:
-        try:
-            idx = ss == e
-            # sorted so results are stable
-            to_old[e] = sorted(list(set(ff[idx])))
-        except:
-            to_old[e] = []
+        idx = ss == e
+        # sorted so results are stable
+        to_old[e] = sorted(list(set(ff[idx])))
 
     to_new = dict()
     for e in from_old:
-        try:
-            idx = ff == e
-            # sorted so results are stable
-            to_new[e] = sorted(list(set(ss[idx])))
-        except:
-            to_new[e] = []
+        idx = ff == e
+        # sorted so results are stable
+        to_new[e] = sorted(list(set(ss[idx])))
 
     return dict(to_old=to_old, to_new=to_new)
 

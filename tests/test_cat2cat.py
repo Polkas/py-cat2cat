@@ -12,6 +12,8 @@ def int_round(x: float) -> int:
     return int(round(x))
 
 
+verticals = load_verticals()
+
 trans = load_trans()
 
 occup = load_occup()
@@ -34,6 +36,22 @@ def test_cat2cat_base():
     assert int_round(c2c["new"]["wei_freq_c2c"].sum()) == o_new.shape[0]
     assert c2c["new"].shape[0] == o_new.shape[0]
     assert all(c2c["new"]["wei_freq_c2c"].values == 1)
+
+
+mappings_f = cat2cat_mappings(trans, "backward", o_new["code"].value_counts().to_dict())
+
+
+def test_cat2cat_custom_freqs():
+    c2c = cat2cat(data, mappings_f)
+    assert isinstance(c2c, dict)
+    assert sorted(list(c2c.keys())) == ["new", "old"]
+    assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
+    assert int_round(c2c["old"]["wei_freq_c2c"].sum()) == o_old.shape[0]
+    assert int_round(c2c["new"]["wei_freq_c2c"].sum()) == o_new.shape[0]
+    assert c2c["new"].shape[0] == o_new.shape[0]
+    assert all(c2c["new"]["wei_freq_c2c"].values == 1)
+    c2c_default = cat2cat(data, mappings)
+    assert c2c_default["old"].equals(c2c["old"])
 
 
 ml = cat2cat_ml(
@@ -85,9 +103,6 @@ def test_cat2cat_multi():
     ]
 
 
-verticals = load_verticals()
-
-
 def test_cat2cat_direct():
     vert_old = verticals.loc[verticals["v_date"] == "2020-04-01", :]
     vert_new = verticals.loc[verticals["v_date"] == "2020-05-01", :]
@@ -118,3 +133,15 @@ def test_cat2cat_direct():
     verts = cat2cat(data=data, mappings=mappings)
 
     assert int_round(verts["new"]["wei_freq_c2c"].sum()) == vert_new.shape[0]
+
+    ml = cat2cat_ml(
+        vert_old.copy(),
+        "vertical",
+        ["sales"],
+        [LinearDiscriminantAnalysis()],
+    )
+
+    verts = cat2cat(data=data, mappings=mappings, ml=ml)
+
+    assert "wei_LinearDiscriminantAnalysis_c2c" in verts["new"].columns
+    assert "wei_LinearDiscriminantAnalysis_c2c" in verts["old"].columns

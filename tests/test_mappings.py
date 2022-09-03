@@ -138,6 +138,13 @@ def test_get_mappings_shape():
         get_mappings(class_with_shape())
 
 
+def test_get_mappings_different_types():
+    trans2 = trans.copy()
+    trans2["old"] = trans2["old"].astype(float)
+    with pytest.raises(AssertionError):
+        get_mappings(trans2)
+
+
 # cat_apply_freq
 
 

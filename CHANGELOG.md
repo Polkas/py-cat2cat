@@ -6,6 +6,10 @@
 
 - Fixed README example, pandas.concat was not imported.
 
+### Tests
+
+- Added more tests to increase the coverage to 100% percent.
+
 ### Miscellaneous
 
 - Added more comments for code examples.
