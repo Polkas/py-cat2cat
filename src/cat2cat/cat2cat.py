@@ -12,7 +12,7 @@ __all__ = ["cat2cat"]
 
 def cat2cat(
     data: cat2cat_data, mappings: cat2cat_mappings, ml: Optional[cat2cat_ml] = None
-):
+) -> Dict[str, DataFrame]:
     """Automatic mapping in a panel dataset - cat2cat procedure
 
     Args:
@@ -142,7 +142,7 @@ def cat2cat(
     return res
 
 
-def _cat2cat_ml(ml, mapp, target_df, cat_var_target):
+def _cat2cat_ml(ml, mapp, target_df, cat_var_target) -> None:
     """cat2cat ml optional part"""
     for target_cat in list(mapp.keys()):
         base_cats = mapp[target_cat]
@@ -192,7 +192,7 @@ def _resolve_frequencies(
     cat_var_base: str,
     user_freqs: Optional[Dict[Any, int]],
     multiplier_var: Optional[str],
-):
+) -> Dict[Any, int]:
     """Resolve the frequencies"""
     freqs: Dict[Any, int] = dict()
     if user_freqs == None:
