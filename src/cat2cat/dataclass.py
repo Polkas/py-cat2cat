@@ -1,14 +1,14 @@
 from pandas import DataFrame
 from sklearn.base import ClassifierMixin
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 
 __all__ = ["cat2cat_data", "cat2cat_mappings", "cat2cat_ml"]
 
 
 @dataclass(frozen=True)
 class cat2cat_data:
-    """The dataclass to represent a data argument used in cat2cat procedure
+    """The dataclass to represent the data argument used in the cat2cat procedure
 
     Args:
         old (DataFrame): older time point in a panel, has to have all columns set in the rest of arguments.
@@ -64,7 +64,7 @@ class cat2cat_data:
 
 @dataclass(frozen=True)
 class cat2cat_mappings:
-    """The dataclass to represent a mappings argument used in cat2cat procedure
+    """The dataclass to represent the mappings argument used in the cat2cat procedure
 
     Args:
         trans (DataFrame): mapping (transition) table (with 2 columns, old and new encoding) - all categories for cat_var in old and new datasets have to be included.
@@ -80,7 +80,7 @@ class cat2cat_mappings:
 
     trans: DataFrame
     direction: str
-    freqs: Union[Dict[Any, int], None] = None
+    freqs: Optional[Dict[Any, int]] = None
 
     def __post_init__(self):
         assert isinstance(self.trans, DataFrame), "trans has to be a pandas.DataFrame"
@@ -97,7 +97,7 @@ class cat2cat_mappings:
 
 @dataclass(frozen=True)
 class cat2cat_ml:
-    """The dataclass to represent a ml argument used in cat2cat procedure
+    """The dataclass to represent the ml argument used in the cat2cat procedure
 
     Args:
         data (DataFrame): dataset with features and the `cat_var`.
