@@ -8,11 +8,11 @@
 
 ### Tests
 
-- Added more tests to increase the coverage to 100% percent.
+- Added more tests to increase the coverage to 100%.
 
 ### Miscellaneous
 
-- Added more comments for code examples.
+- Added more comments in code examples.
 
 ## v0.1.3 (01/09/2022)
 

@@ -6,6 +6,7 @@
 
 <hr>
 
+<div>
 <a href="https://github.com/polkas/py-cat2cat/actions">
 <img src="https://github.com/polkas/py-cat2cat/workflows/ci/badge.svg" alt="Build Status">
 </a>
@@ -15,10 +16,11 @@
 <a href="https://pypi.org/project/cat2cat/">
 <img src="https://img.shields.io/pypi/v/cat2cat.svg" alt="pypi">
 </a>
+<div>
 
-<br> 
+<br>
 
-**Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset.**
+### Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset
 
 There is offered the cat2cat procedure to map a categorical variable according to a mapping (transition) table between two different time points. The mapping (transition) table should to have a candidate for each category from the targeted for an update period. The main rule is to replicate the observation if it could be assigned to a few categories, then using simple frequencies or statistical methods to approximate probabilities of being assigned to each of them.
 
