@@ -1,10 +1,28 @@
 # cat2cat 
-<a href='https://github.com/polkas/py-cat2cat'><img src='https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/cat2cat_logo.png' align="right" width="200px" style="margin:5px;"/></a>
-[![Build Status](https://github.com/polkas/py-cat2cat/workflows/ci/badge.svg)](https://github.com/polkas/py-cat2cat/actions)
-[![codecov](https://codecov.io/gh/Polkas/py-cat2cat/branch/main/graph/badge.svg)](https://codecov.io/gh/Polkas/py-cat2cat)
-[![pypi](https://img.shields.io/pypi/v/cat2cat.svg)](https://pypi.org/project/cat2cat/)
 
-Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset.
+<a href='https://github.com/polkas/py-cat2cat'>
+<img src='https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/cat2cat_logo.png'  style="display:block;margin-left:auto;margin-right:auto;width:200px;" width="200px" alt="cat2cat logo"/>
+</a>
+
+<hr>
+
+<a href="https://github.com/polkas/py-cat2cat/actions">
+<img src="https://github.com/polkas/py-cat2cat/workflows/ci/badge.svg" alt="Build Status">
+</a>
+<a href="https://codecov.io/gh/Polkas/py-cat2cat">
+<img src="https://codecov.io/gh/Polkas/py-cat2cat/branch/main/graph/badge.svg" alt="codecov">
+</a>
+<a href="https://pypi.org/project/cat2cat/">
+<img src="https://img.shields.io/pypi/v/cat2cat.svg" alt="pypi">
+</a>
+
+<br> 
+
+**Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset.**
+
+There is offered the cat2cat procedure to map a categorical variable according to a mapping (transition) table between two different time points. The mapping (transition) table should to have a candidate for each category from the targeted for an update period. The main rule is to replicate the observation if it could be assigned to a few categories, then using simple frequencies or statistical methods to approximate probabilities of being assigned to each of them.
+
+This algorithm was invented and implemented in the paper by (Nasinski, Majchrowska and Broniatowska (2020) doi:10.24425/cejeme.2020.134747).
 
 ## Installation
 

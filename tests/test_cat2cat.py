@@ -23,47 +23,75 @@ o_2008 = o_old = occup.loc[occup.year == 2008, :].copy()
 o_2010 = o_new = occup.loc[occup.year == 2010, :].copy()
 o_2012 = occup.loc[occup.year == 2012, :].copy()
 
-data = cat2cat_data(o_old, o_new, "code", "code", "year")
-mappings = cat2cat_mappings(trans, "backward")
 
-
-def test_cat2cat_base():
+def test_cat2cat_base_back():
+    data = cat2cat_data(o_old, o_new, "code", "code", "year")
+    mappings = cat2cat_mappings(trans, "backward")
     c2c = cat2cat(data, mappings)
+
     assert isinstance(c2c, dict)
     assert sorted(list(c2c.keys())) == ["new", "old"]
-    assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
+
+    assert c2c["old"].shape == (227662, 17)
+    assert c2c["new"].shape == (17323, 17)
+    assert c2c["new"].shape[0] == o_new.shape[0]
+
     assert int_round(c2c["old"]["wei_freq_c2c"].sum()) == o_old.shape[0]
     assert int_round(c2c["new"]["wei_freq_c2c"].sum()) == o_new.shape[0]
-    assert c2c["new"].shape[0] == o_new.shape[0]
+    assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
     assert all(c2c["new"]["wei_freq_c2c"].values == 1)
 
 
-mappings_f = cat2cat_mappings(trans, "backward", o_new["code"].value_counts().to_dict())
+def test_cat2cat_base_for():
+    data = cat2cat_data(o_old, o_new, "code", "code", "year")
+    mappings = cat2cat_mappings(trans, "forward")
+    c2c = cat2cat(data, mappings)
+
+    assert isinstance(c2c, dict)
+    assert sorted(list(c2c.keys())) == ["new", "old"]
+
+    assert c2c["new"].shape == (18577, 17)
+    assert c2c["old"].shape == (17223, 17)
+
+    assert int_round(c2c["old"]["wei_freq_c2c"].sum()) == o_old.shape[0]
+    assert int_round(c2c["new"]["wei_freq_c2c"].sum()) <= o_new.shape[0]
+    assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
+    assert all(c2c["old"]["wei_freq_c2c"].values == 1)
 
 
 def test_cat2cat_custom_freqs():
+    data = cat2cat_data(o_old, o_new, "code", "code", "year")
+    mappings_f = cat2cat_mappings(
+        trans, "backward", o_new["code"].value_counts().to_dict()
+    )
     c2c = cat2cat(data, mappings_f)
+
     assert isinstance(c2c, dict)
     assert sorted(list(c2c.keys())) == ["new", "old"]
-    assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
+
     assert int_round(c2c["old"]["wei_freq_c2c"].sum()) == o_old.shape[0]
     assert int_round(c2c["new"]["wei_freq_c2c"].sum()) == o_new.shape[0]
     assert c2c["new"].shape[0] == o_new.shape[0]
+
+    assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
     assert all(c2c["new"]["wei_freq_c2c"].values == 1)
+
+    mappings = cat2cat_mappings(trans, "backward")
     c2c_default = cat2cat(data, mappings)
     assert c2c_default["old"].equals(c2c["old"])
 
 
-ml = cat2cat_ml(
-    occup.loc[occup.year >= 2010, :].copy(),
-    "code",
-    ["salary", "age", "edu", "sex"],
-    [LinearDiscriminantAnalysis()],
-)
-
-
 def test_cat2cat_ml():
+    data = cat2cat_data(o_old, o_new, "code", "code", "year")
+    mappings = cat2cat_mappings(trans, "backward")
+    ml = cat2cat_ml(
+        occup.loc[occup.year >= 2010, :].copy(),
+        "code",
+        ["salary", "age", "edu", "sex"],
+        [LinearDiscriminantAnalysis()],
+    )
     c2c = cat2cat(data, mappings, ml)
+
     assert isinstance(c2c, dict)
     assert sorted(list(c2c.keys())) == ["new", "old"]
     assert (
@@ -75,7 +103,6 @@ def test_cat2cat_ml():
 
 
 def test_cat2cat_multi():
-
     data = cat2cat_data(o_2008, o_2010, "code", "code", "year")
     mappings = cat2cat_mappings(trans, "backward")
 

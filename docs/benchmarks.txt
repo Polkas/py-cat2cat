@@ -22,14 +22,24 @@ ml = cat2cat_ml(
     models = [KNeighborsClassifier()]
 )
 
+N=100
+import time
+res = list()
+for i in range(N):
+    start_time = time.time()
+    cc = cat2cat(data, mappings)
+    res.append(time.time() - start_time)
+
+sum(res) / N
+
 
 import time
 res = list()
-for i in range(5):
+for i in range(10):
     start_time = time.time()
-    cat2cat(data, mappings, ml)
+    cc = cat2cat(data, mappings, ml)
     res.append(time.time() - start_time)
-sum(res) / 5
+sum(res) / 10
 
 # Profiling
 

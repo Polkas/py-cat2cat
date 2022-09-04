@@ -107,17 +107,17 @@ def cat2cat(
     nrow_target = target_df.shape[0]
 
     # target_df
+    # index cat2cat
     target_df = target_df.assign(index_c2c=arange(nrow_target))
+    # replication process
     target_df = target_df.iloc[repeat(arange(nrow_target), lens), :]
-    target_df = target_df.assign(
-        g_new_c2c=[e for l in a_mapp for e in l],
-        rep_c2c=repeat(lens, lens),
-    )
-    target_df = target_df.assign(
-        wei_naive_c2c=1 / target_df.rep_c2c,
-        wei_freq_c2c=[e for l in a_mapp_f for e in l],
-    )
+    # remove duplicates in the index
     target_df = target_df.reset_index(drop=True)
+    # cat2cat columns
+    target_df["g_new_c2c"] = [e for l in a_mapp for e in l]
+    target_df["rep_c2c"] = repeat(lens, lens)
+    target_df["wei_naive_c2c"] = 1 / target_df.rep_c2c
+    target_df["wei_freq_c2c"] = [e for l in a_mapp_f for e in l]
 
     # base_df
     base_df = dummy_c2c(base_df, cat_var_base)
