@@ -1,6 +1,6 @@
 from pandas import DataFrame
 from numpy import arange, concatenate, ndarray
-from typing import Optional, Callable, List
+from typing import Optional, Callable, Sequence
 
 __all__ = ["prune_c2c", "dummy_c2c"]
 
@@ -72,7 +72,10 @@ def prune_c2c(
 
 
 def dummy_c2c(
-    df: DataFrame, cat_var: str, models: Optional[List] = None, inplace: bool = False
+    df: DataFrame,
+    cat_var: str,
+    models: Optional[Sequence] = None,
+    inplace: bool = False,
 ) -> DataFrame:
     """Add default cat2cat columns to a `data.frame`
 
@@ -82,7 +85,7 @@ def dummy_c2c(
     Args:
         df (DataFrame): a specific period from the cat2cat function result.
         cat_car (str): name of categorial variable
-        models (Optional[list]): an optional list of str, ml models applied (class name).
+        models (Optional[Sequence]): an optional list of str, ml models applied (class name).
                                  By default turn off, equal None.
         inplace (bool): Whether to perform the operation inplace. By default False.
 
@@ -96,7 +99,7 @@ def dummy_c2c(
         (cat_var in df.columns)
     ), "df argument has to be a DataFrame with the cat_var column"
     assert (models == None) or isinstance(
-        models, list
+        models, Sequence
     ), "models has to be None or list of str (ml models)"
     assert isinstance(inplace, bool), "inplace argument has to be a bool"
 

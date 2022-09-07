@@ -1,7 +1,7 @@
 from pandas import DataFrame
 from sklearn.base import ClassifierMixin
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
+from typing import Sequence, Dict, Any, Optional
 
 __all__ = ["cat2cat_data", "cat2cat_mappings", "cat2cat_ml"]
 
@@ -102,25 +102,25 @@ class cat2cat_ml:
     Args:
         data (DataFrame): dataset with features and the `cat_var`.
         cat_var (str): the dependent variable name.
-        features (List[str]): list of features names where all have to be numeric or logical
-        models (List[ClassifierMixin]): scikit-learn instances (classes inherit from ClassifierMixin) like,
+        features (Sequence[str]): list of features names where all have to be numeric or logical
+        models (Sequence[ClassifierMixin]): scikit-learn instances (classes inherit from ClassifierMixin) like,
                                         RandomForestClassifier() or LinearDiscriminantAnalysis() instances.
     """
 
     data: DataFrame
     cat_var: str
-    features: List[str]
-    models: List[ClassifierMixin]
+    features: Sequence[str]
+    models: Sequence[ClassifierMixin]
 
     def __post_init__(self):
         assert isinstance(self.data, DataFrame), "data has to be a pandas.DataFrame"
         assert isinstance(self.cat_var, str) and (
             self.cat_var in self.data.columns
         ), "cat_var has to be a str and a data argument column"
-        assert isinstance(self.features, list) and all(
+        assert isinstance(self.features, Sequence) and all(
             [e in self.data.columns for e in self.features]
         ), "features has to be a list and each have to be a column in the data argument."
-        assert isinstance(self.models, list) and (
+        assert isinstance(self.models, Sequence) and (
             len(self.models) > 0
         ), "models has to be a list of length at least 1."
         assert all(

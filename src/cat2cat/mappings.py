@@ -3,6 +3,7 @@ from numpy import ndarray, unique, repeat, array, round
 
 from collections.abc import Iterable
 from typing import Union, Optional, Any, List, Dict, Sequence
+from collections import namedtuple
 
 __all__ = ["get_mappings", "cat_apply_freq", "get_freqs"]
 

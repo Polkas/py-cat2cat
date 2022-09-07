@@ -13,6 +13,7 @@
 ### Miscellaneous
 
 - Added more comments in code examples.
+- Added support in a few places for Sequence, to not limit users only to List.
 
 ## v0.1.3 (01/09/2022)
 
