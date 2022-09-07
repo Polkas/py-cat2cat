@@ -7,7 +7,7 @@ from typing import Union, Optional, Any, List, Dict, Sequence
 __all__ = ["get_mappings", "cat_apply_freq", "get_freqs"]
 
 
-def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[Any, Dict[Any, List[Any]]]:
+def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[Any, List[Any]]]:
     """Transforming a mapping table with mappings to two associative lists
 
     Transforming a transition table with mappings to two associative lists
@@ -20,7 +20,7 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[Any, Dict[Any, List[Any]]
         x (pandas.DataFrame or numpy.ndarray): transition table with 2 columns where first column is assumed to be the older encoding.
 
     Returns:
-        Dict[Any, Dict[Any, List[Any]]]: dict with 2 internal dicts, `to_old` and `to_new`.
+        Dict[str, Dict[Any, List[Any]]]: dict with 2 internal dicts, `to_old` and `to_new`.
 
     >>> from cat2cat.mappings import get_mappings
     >>> from numpy import array
@@ -85,7 +85,7 @@ def get_freqs(
     >>> get_freqs([1,1,1,2,1,2,2,11])
     {1: 4, 2: 3, 11: 1}
     """
-    assert isinstance(x, Iterable), "x has to be a Iterable"
+    assert isinstance(x, Iterable), "x has to be at least a Iterable"
     assert (multiplier is None) or isinstance(
         multiplier, Iterable
     ), "multiplier has to be a Iterable"
@@ -99,7 +99,9 @@ def get_freqs(
     return res
 
 
-def cat_apply_freq(to_x: Dict, freqs: Dict[Any, int]) -> Dict[Any, List[float]]:
+def cat_apply_freq(
+    to_x: Dict[Any, Dict[Any, List[Any]]], freqs: Dict[Any, int]
+) -> Dict[Any, List[float]]:
     """
     Applying frequencies to the object returned by the `get_mappings` function
 

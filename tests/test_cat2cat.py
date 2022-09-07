@@ -41,6 +41,11 @@ def test_cat2cat_base_back():
     assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
     assert all(c2c["new"]["wei_freq_c2c"].values == 1)
 
+    assert (
+        int_round((c2c["old"]["rep_c2c"] * c2c["old"]["wei_naive_c2c"]).sum())
+        == c2c["old"].shape[0]
+    )
+
 
 def test_cat2cat_base_for():
     data = cat2cat_data(o_old, o_new, "code", "code", "year")
@@ -57,6 +62,11 @@ def test_cat2cat_base_for():
     assert int_round(c2c["new"]["wei_freq_c2c"].sum()) <= o_new.shape[0]
     assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
     assert all(c2c["old"]["wei_freq_c2c"].values == 1)
+
+    assert (
+        int_round((c2c["new"]["rep_c2c"] * c2c["new"]["wei_naive_c2c"]).sum())
+        == c2c["new"].shape[0]
+    )
 
 
 def test_cat2cat_custom_freqs():

@@ -71,6 +71,10 @@ def test_cat2cat_ml():
 
     assert isinstance(ml, cat2cat_ml)
 
+    ml = cat2cat_ml(o_new, "code", ("salary", "age"), (RandomForestClassifier(),))
+
+    assert isinstance(ml, cat2cat_ml)
+
     with pytest.raises(AssertionError):
         cat2cat_ml(o_new, "code", ["salary", "age"], [])
 

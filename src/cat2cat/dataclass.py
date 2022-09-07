@@ -119,10 +119,10 @@ class cat2cat_ml:
         ), "cat_var has to be a str and a data argument column"
         assert isinstance(self.features, Sequence) and all(
             [e in self.data.columns for e in self.features]
-        ), "features has to be a list and each have to be a column in the data argument."
+        ), "features has to be a list-like and each have to be a column in the data argument."
         assert isinstance(self.models, Sequence) and (
             len(self.models) > 0
-        ), "models has to be a list of length at least 1."
+        ), "models has to be a list-like of length at least 1."
         assert all(
             [issubclass(type(e), ClassifierMixin) for e in self.models]
         ), "models arg elements have to be subclass of ClassifierMixin each"

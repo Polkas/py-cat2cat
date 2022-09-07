@@ -100,7 +100,7 @@ def dummy_c2c(
     ), "df argument has to be a DataFrame with the cat_var column"
     assert (models == None) or isinstance(
         models, Sequence
-    ), "models has to be None or list of str (ml models)"
+    ), "models has to be None or list-like of str (ml models names)"
     assert isinstance(inplace, bool), "inplace argument has to be a bool"
 
     df2 = df if inplace else df.copy()
