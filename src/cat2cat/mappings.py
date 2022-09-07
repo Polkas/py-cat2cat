@@ -3,12 +3,11 @@ from numpy import ndarray, unique, repeat, array, round
 
 from collections.abc import Iterable
 from typing import Union, Optional, Any, List, Dict, Sequence
-from collections import namedtuple
 
 __all__ = ["get_mappings", "cat_apply_freq", "get_freqs"]
 
 
-def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[str, List[Any]]]:
+def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[Any, Dict[Any, List[Any]]]:
     """Transforming a mapping table with mappings to two associative lists
 
     Transforming a transition table with mappings to two associative lists
@@ -21,7 +20,7 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[str, List[Any]]
         x (pandas.DataFrame or numpy.ndarray): transition table with 2 columns where first column is assumed to be the older encoding.
 
     Returns:
-        dict: with 2 dicts, `to_old` and `to_new`.
+        Dict[Any, Dict[Any, List[Any]]]: dict with 2 internal dicts, `to_old` and `to_new`.
 
     >>> from cat2cat.mappings import get_mappings
     >>> from numpy import array
@@ -58,13 +57,13 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[str, List[Any]]
     for e in from_new:
         idx = ss == e
         # sorted so results are stable
-        to_old[e] = sorted(list(set(ff[idx])))
+        to_old[e] = sorted(set(ff[idx]))
 
     to_new = dict()
     for e in from_old:
         idx = ff == e
         # sorted so results are stable
-        to_new[e] = sorted(list(set(ss[idx])))
+        to_new[e] = sorted(set(ss[idx]))
 
     return dict(to_old=to_old, to_new=to_new)
 
@@ -76,8 +75,8 @@ def get_freqs(
     Getting frequencies from a vector with an optional multiplier
 
     Args:
-        x (Sequence): a list like, categorical variable to summarize.
-        multiplier (Optional[Sequence]): a list like, how many times to repeat certain value, additional weights.
+        x (Sequence[Any]): a list like, categorical variable to summarize.
+        multiplier (Optional[Sequence[int]]): a list like, how many times to repeat certain value, additional weights.
                                          Have the same length as the x argument. Defaults to None.
 
     Returns:
@@ -100,16 +99,16 @@ def get_freqs(
     return res
 
 
-def cat_apply_freq(to_x: Dict, freqs: Dict[Any, int]) -> Dict[str, List[float]]:
+def cat_apply_freq(to_x: Dict, freqs: Dict[Any, int]) -> Dict[Any, List[float]]:
     """
     Applying frequencies to the object returned by the `get_mappings` function
 
     Args:
-        to_x (dict): object returned by `get_mappings` function
-        freqs (dict): object like the one returned by the `get_freqs` function
+        to_x (Dict[Any, Dict[Any, List[Any]]]): object returned by `get_mappings` function.
+        freqs (Dict[Any, int]): object like the one returned by the `get_freqs` function.
 
     Returns:
-        dict: the same shape as to_x arg but the values are probabilities now
+        Dict[Any, List[float]]: the same shape as the to_x arg but the values are probabilities now.
 
     Note:
         freqs arg keys and to_x arg values have to be of the same type

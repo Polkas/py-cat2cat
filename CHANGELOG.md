@@ -5,6 +5,7 @@
 ### Fix
 
 - Fixed README example, pandas.concat was not imported.
+- Fixed some typing, to be more precise.
 
 ### Tests
 
