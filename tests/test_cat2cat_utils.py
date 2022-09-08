@@ -67,3 +67,7 @@ def test_dummy_return_ml():
         list(dummy_c2c(occup, "code", ["LinearDiscriminantAnalysis"]).columns)
         == expected_cols
     )
+    assert (
+        list(dummy_c2c(occup, "code", ("LinearDiscriminantAnalysis",)).columns)
+        == expected_cols
+    )
