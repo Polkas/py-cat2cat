@@ -3,8 +3,9 @@
 
 from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from cat2cat.datasets import load_trans, load_occup
+
 
 trans = load_trans()
 occup = load_occup()
@@ -39,6 +40,7 @@ for i in range(10):
     start_time = time.time()
     cc = cat2cat(data, mappings, ml)
     res.append(time.time() - start_time)
+
 sum(res) / 10
 
 # Profiling
