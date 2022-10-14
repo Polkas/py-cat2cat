@@ -28,7 +28,7 @@ class cat2cat_data:
     id_var: Optional[str] = None
     multiplier_var: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert isinstance(self.old, DataFrame), "old has to be a pandas.DataFrame"
         assert isinstance(self.new, DataFrame), "new has to be a pandas.DataFrame"
         assert isinstance(self.cat_var_old, str) and (
@@ -82,7 +82,7 @@ class cat2cat_mappings:
     direction: str
     freqs: Optional[Dict[Any, int]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert isinstance(self.trans, DataFrame), "trans has to be a pandas.DataFrame"
         assert self.trans.shape[1] == 2, "trans has to have two columns"
         assert isinstance(self.direction, str), "direction has to be a str"
@@ -112,7 +112,7 @@ class cat2cat_ml:
     features: Sequence[str]
     models: Sequence[ClassifierMixin]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert isinstance(self.data, DataFrame), "data has to be a pandas.DataFrame"
         assert isinstance(self.cat_var, str) and (
             self.cat_var in self.data.columns

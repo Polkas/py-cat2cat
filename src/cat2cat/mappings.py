@@ -100,13 +100,13 @@ def get_freqs(
 
 
 def cat_apply_freq(
-    to_x: Dict[Any, Dict[Any, List[Any]]], freqs: Dict[Any, int]
+    to_x: Dict[Any, List[Any]], freqs: Dict[Any, int]
 ) -> Dict[Any, List[float]]:
     """
     Applying frequencies to the object returned by the `get_mappings` function
 
     Args:
-        to_x (Dict[Any, Dict[Any, List[Any]]]): object returned by `get_mappings` function.
+        to_x (Dict[Any, List[Any]]): object returned by `get_mappings` function.
         freqs (Dict[Any, int]): object like the one returned by the `get_freqs` function.
 
     Returns:

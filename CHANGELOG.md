@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.1.4.9000
+
+- Fixed some typing, and clear mypy.
 ## v0.1.4 (12/09/2022)
 
 ### Fix

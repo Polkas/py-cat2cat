@@ -1,11 +1,12 @@
 from importlib_resources import files, as_file
+from importlib_resources.abc import Traversable
 from pandas import read_pickle, DataFrame
 import cat2cat.data
 
 __all__ = ["load_trans", "load_occup", "load_verticals"]
 
 
-def _get_file_path(file: str):
+def _get_file_path(file: str) -> Traversable:
     """Get a file path"""
     source = files(cat2cat.data).joinpath(file)
     return source

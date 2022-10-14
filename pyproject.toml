@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cat2cat"
-version = "0.1.4"
+version = "0.1.4.9000"
 description = "Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset."
 authors = ["Maciej Nasinski"]
 license = "MIT"
@@ -33,3 +33,8 @@ sphinx-autoapi = "^1.9.0"
 sphinx-rtd-theme = "^1.0.0"
 snakeviz = "^2.1.1"
 mypy = "^0.971"
+
+[tool.mypy]
+python_version = "3.8"
+disallow_untyped_defs = true
+ignore_missing_imports = true

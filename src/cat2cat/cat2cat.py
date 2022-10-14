@@ -142,7 +142,7 @@ def cat2cat(
     return res
 
 
-def _cat2cat_ml(ml, mapp, target_df, cat_var_target) -> None:
+def _cat2cat_ml(ml: cat2cat_ml, mapp: Dict[Any, Any], target_df: DataFrame, cat_var_target: str) -> None:
     """cat2cat ml optional part"""
     for target_cat in list(mapp.keys()):
         base_cats = mapp[target_cat]
@@ -159,7 +159,7 @@ def _cat2cat_ml(ml, mapp, target_df, cat_var_target) -> None:
 
         target_cats = data_ml_target["g_new_c2c"]
         data_ml_target_uniq = data_ml_target.drop_duplicates(
-            subset=["index_c2c"] + ml.features
+            subset=["index_c2c"] + list(ml.features)
         )
         index_c2c = data_ml_target_uniq["index_c2c"].values
 
@@ -194,7 +194,7 @@ def _resolve_frequencies(
     multiplier_var: Optional[str],
 ) -> Dict[Any, int]:
     """Resolve the frequencies"""
-    freqs: Dict[Any, int] = dict()
+    freqs: Optional[Dict[Any, int]]
     if user_freqs == None:
         if "wei_freq_c2c" in base_df.columns:
             freqs = (
@@ -208,4 +208,4 @@ def _resolve_frequencies(
             )
     else:
         freqs = user_freqs
-    return freqs
+    return freqs # type: ignore
