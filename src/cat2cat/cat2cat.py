@@ -175,7 +175,7 @@ def _cat2cat_ml(ml: cat2cat_ml, mapp: Dict[Any, Any], target_df: DataFrame, cat_
 
                 preds_df = DataFrame(preds)
                 preds_df.columns = m.classes_
-                preds_df.loc[:, setdiff1d(target_cats.unique(), m.classes_)] = 0
+                preds_df[setdiff1d(target_cats.unique(), m.classes_)] = 0
                 preds_df["index_c2c"] = index_c2c
                 preds_df_melt = preds_df.melt(id_vars="index_c2c", var_name="g_new_c2c")
                 merge_on = ["index_c2c", "g_new_c2c"]

@@ -66,7 +66,9 @@ def prune_c2c(
     df2 = df2.loc[concatenate(final_rows)]
     # reweight
     df2[wei_var] = (
-        df2.groupby(index_var, sort=False)[wei_var].apply(lambda x: x / sum(x)).values
+        df2.groupby(index_var, sort=False, group_keys=False)[wei_var]
+        .apply(lambda x: x / sum(x))
+        .values
     )
     return df2
 
