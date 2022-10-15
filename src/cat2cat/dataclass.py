@@ -69,9 +69,9 @@ class cat2cat_mappings:
     Args:
         trans (DataFrame): mapping (transition) table (with 2 columns, old and new encoding) - all categories for cat_var in old and new datasets have to be included.
         diretion (str): "backward" or "forward"
-        freqs (Optional[str]): If It is not provided then is assessed automatically.
-                               Artificial counts for each variable level in the base period.
-                               It is optional nevertheless will be often needed, as gives more control.
+        freqs (Optional[Dict[Any, int]]): If It is not provided then is assessed automatically.
+                            Artificial counts for each variable level in the base period.
+                            It is optional nevertheless will be often needed, as gives more control.
 
     Note:
         The mapping (transition) table should to have a candidate for each category from the targeted for an update period.
@@ -92,7 +92,7 @@ class cat2cat_mappings:
         ], "direction has to be one of 'forward' or 'backward'"
         assert (self.freqs == None) or isinstance(
             self.freqs, dict
-        ), "freqs has to be a pandas.DataFrame with 2 columns, or None"
+        ), "freqs has to be a dict, or None"
 
 
 @dataclass(frozen=True)

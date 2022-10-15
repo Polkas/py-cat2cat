@@ -3,7 +3,9 @@
 ## v0.1.4.9000
 
 - Fixed a bug that `cat2cat_ml.features` can be only a `list` not a `Sequence`.
+- Fixed assertion message and docs for the `freqs` argument in the `cat2cat_mappings`.
 - Fixed some typing, and bring the clear `mypy`.
+
 ## v0.1.4 (12/09/2022)
 
 ### Fix

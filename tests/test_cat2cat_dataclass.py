@@ -59,6 +59,9 @@ def test_cat2cat_mappings():
         cat2cat_mappings(1, "backward")
 
     with pytest.raises(AssertionError):
+        cat2cat_mappings(trans, "backward", 3)
+    
+    with pytest.raises(AssertionError):
         cat2cat_mappings(1, "WRONG")
 
     with pytest.raises(FrozenInstanceError):
