@@ -98,11 +98,8 @@ def cat2cat(
     if isinstance(mappings.freqs, dict):
         freqs = mappings.freqs
     else:
-        freqs = _resolve_frequencies(
-            base_df, cat_var_base, data.multiplier_var
-        )
+        freqs = _resolve_frequencies(base_df, cat_var_base, data.multiplier_var)
 
-    
     # frequencies per category
     mapp_f = cat_apply_freq(mapp, freqs)
 
@@ -148,7 +145,9 @@ def cat2cat(
     return res
 
 
-def _cat2cat_ml(ml: cat2cat_ml, mapp: Dict[Any, Any], target_df: DataFrame, cat_var_target: str) -> None:
+def _cat2cat_ml(
+    ml: cat2cat_ml, mapp: Dict[Any, Any], target_df: DataFrame, cat_var_target: str
+) -> None:
     """cat2cat ml optional part"""
     for target_cat in list(mapp.keys()):
         base_cats = mapp[target_cat]
