@@ -94,9 +94,15 @@ def cat2cat(
         mid_df["g_new_c2c"] = [tos_dict.get(e) for e in mid_df[data.id_var]]
 
     # frequencies
-    freqs = _resolve_frequencies(
-        base_df, cat_var_base, mappings.freqs, data.multiplier_var
-    )
+    freqs: Dict[Any, int]
+    if isinstance(mappings.freqs, dict):
+        freqs = mappings.freqs
+    else:
+        freqs = _resolve_frequencies(
+            base_df, cat_var_base, data.multiplier_var
+        )
+
+    
     # frequencies per category
     mapp_f = cat_apply_freq(mapp, freqs)
 
@@ -190,22 +196,18 @@ def _cat2cat_ml(ml: cat2cat_ml, mapp: Dict[Any, Any], target_df: DataFrame, cat_
 def _resolve_frequencies(
     base_df: DataFrame,
     cat_var_base: str,
-    user_freqs: Optional[Dict[Any, int]],
     multiplier_var: Optional[str],
 ) -> Dict[Any, int]:
     """Resolve the frequencies"""
-    freqs: Optional[Dict[Any, int]]
-    if user_freqs == None:
-        if "wei_freq_c2c" in base_df.columns:
-            freqs = (
-                base_df.groupby(cat_var_base)
-                .apply(lambda x: sum(x["wei_freq_c2c"] * x.get(multiplier_var, 1)))
-                .to_dict()
-            )
-        else:
-            freqs = get_freqs(
-                base_df[cat_var_base].values, base_df.get(multiplier_var, None)
-            )
+    freqs: Dict[Any, int]
+    if "wei_freq_c2c" in base_df.columns:
+        freqs = (
+            base_df.groupby(cat_var_base)
+            .apply(lambda x: sum(x["wei_freq_c2c"] * x.get(multiplier_var, 1)))
+            .to_dict()
+        )
     else:
-        freqs = user_freqs
-    return freqs # type: ignore
+        freqs = get_freqs(
+            base_df[cat_var_base].values, base_df.get(multiplier_var, None)
+        )
+    return freqs

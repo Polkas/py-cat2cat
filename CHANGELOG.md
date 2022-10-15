@@ -2,7 +2,8 @@
 
 ## v0.1.4.9000
 
-- Fixed some typing, and clear mypy.
+- Fixed a bug that `cat2cat_ml.features` can be only a `list` not a `Sequence`.
+- Fixed some typing, and bring the clear `mypy`.
 ## v0.1.4 (12/09/2022)
 
 ### Fix
