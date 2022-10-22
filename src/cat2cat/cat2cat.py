@@ -37,6 +37,10 @@ def cat2cat(
         `mappings.trans` arg columns and the `data.cat_var` column have to be of the same type.
         When ml part applied `ml.cat_var` has to have the same type too.
 
+        3. Please covert all numpy.NaN to some numeric value like 999999.
+        None`s in a pandas column have to be converted to a "None" character.
+        Changes have to be made at the same time for the mapping table and datasets.
+
     >>> from cat2cat import cat2cat
     >>> from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
     >>> from sklearn.ensemble import RandomForestClassifier

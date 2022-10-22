@@ -1,5 +1,5 @@
 from pandas import DataFrame
-from numpy import ndarray, unique, repeat, array, round
+from numpy import ndarray, unique, repeat, array, round, unique, sort, isnan
 
 from collections.abc import Iterable
 from typing import Union, Optional, Any, List, Dict, Sequence
@@ -21,6 +21,9 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[Any, List[Any]]
 
     Returns:
         Dict[str, Dict[Any, List[Any]]]: dict with 2 internal dicts, `to_old` and `to_new`.
+    Note:
+        Please covert all numpy.NaN to some numeric value like 999999.
+        None`s in a pandas column have to be converted to a "None" character.
 
     >>> from cat2cat.mappings import get_mappings
     >>> from numpy import array
@@ -40,30 +43,47 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[Any, List[Any]]
     ), "x should have 2 dimensions and the second one is equal to 2 (columns)"
 
     if isinstance(x, DataFrame):
-        ff = x.iloc[:, 0].values
-        ss = x.iloc[:, 1].values
+        ff = x.iloc[:, 0].copy()
+        which_ff_null = ff.isnull()
+        ff = ff.values
+        ss = x.iloc[:, 1].copy()
+        which_ss_null = ss.isnull()
+        ss = ss.values
     elif isinstance(x, ndarray):
-        ff = x[:, 0]
-        ss = x[:, 1]
+        ff = x[:, 0].copy()
+        ss = x[:, 1].copy()
     else:
         raise (TypeError)
 
     assert ff.dtype == ss.dtype
+    col_type = ff.dtype
 
-    from_old = set(ff)
-    from_new = set(ss)
+    if col_type == "O":
+        ff[which_ff_null | (ff == None)] = "None"
+        ss[which_ss_null | (ss == None)] = "None"
+
+    from_old = unique(ff)
+    from_new = unique(ss)
 
     to_old = dict()
     for e in from_new:
-        idx = ss == e
+        if (col_type in [float, int]) and isnan(e):
+            idx = isnan(ss)
+        else:
+            idx = ss == e
+
         # sorted so results are stable
-        to_old[e] = sorted(set(ff[idx]))
+        to_old[e] = sorted(unique(ff[idx]))
 
     to_new = dict()
     for e in from_old:
-        idx = ff == e
+        if (col_type in [float, int]) and isnan(e):
+            idx = isnan(ff)
+        else:
+            idx = ff == e
+
         # sorted so results are stable
-        to_new[e] = sorted(set(ss[idx]))
+        to_new[e] = sorted(unique(ss[idx]))
 
     return dict(to_old=to_old, to_new=to_new)
 

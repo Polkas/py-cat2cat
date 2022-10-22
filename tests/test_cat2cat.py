@@ -2,10 +2,11 @@ from cat2cat.datasets import load_trans, load_occup, load_verticals
 from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 from cat2cat.cat2cat_utils import dummy_c2c
-from pandas import concat
-from numpy import round
+from pandas import concat, DataFrame
+from numpy import round, setdiff1d
 import pytest
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.tree import DecisionTreeClassifier
 
 
 def int_round(x: float) -> int:
@@ -13,8 +14,6 @@ def int_round(x: float) -> int:
 
 
 verticals = load_verticals()
-
-trans = load_trans()
 
 occup = load_occup()
 occup_small = load_occup(small=True)
@@ -28,17 +27,55 @@ o_old_int["code"] = o_old_int["code"].astype(int)
 o_new_int = o_new.copy()
 o_new_int["code"] = o_new_int["code"].astype(int)
 
+trans = load_trans()
+# impute missing values
+trans = concat(
+    [trans, DataFrame({"old": "99999", "new": setdiff1d(o_new.code, trans.new)})]
+)
+
 trans_int = trans.copy()
-trans_int.loc[trans_int["old"].isnull(), "old"] = "9999"
+trans_int.loc[trans_int["old"].isnull(), "old"] = "99999"
 trans_int = trans_int.astype({"old": int, "new": int})
 
 nr_rows_old = {"backward": 227662, "forward": 17223}
-nr_rows_new = {"backward": 17323, "forward": 18577}
+nr_rows_new = {"backward": 17323, "forward": 18680}
 data_dict = {
-    "str": {"old": o_old, "new": o_new, "trans": trans},
-    "int": {"old": o_old_int, "new": o_new_int, "trans": trans_int},
+    "str": {
+        "old": o_old,
+        "new": o_new,
+        "trans": trans,
+        "freqs": {
+            "forward": o_new["code"].value_counts().to_dict(),
+            "backward": o_old["code"].value_counts().to_dict(),
+        },
+    },
+    "int": {
+        "old": o_old_int,
+        "new": o_new_int,
+        "trans": trans_int,
+        "freqs": {
+            "forward": o_new_int["code"].value_counts().to_dict(),
+            "backward": o_old_int["code"].value_counts().to_dict(),
+        },
+    },
 }
 which_target_origin = {"backward": ("old", "new"), "forward": ("new", "old")}
+
+
+def utils_test_structure(data, direction, nr_rows_old, nr_rows_new):
+    pass
+
+
+def utils_test_expected():
+    pass
+
+
+def utils_test_sum1():
+    pass
+
+
+def utils_test_copy():
+    pass
 
 
 @pytest.mark.parametrize("direction", ["backward", "forward"])
@@ -51,21 +88,25 @@ def test_cat2cat_base(direction, cat_type):
     )
     mappings = cat2cat_mappings(data_dict[cat_type]["trans"], direction)
     c2c = cat2cat(data, mappings)
+
+    # result structure
     assert isinstance(c2c, dict)
     assert sorted(list(c2c.keys())) == ["new", "old"]
 
+    # expected number of rows
     assert c2c["old"].shape[0] == nr_rows_old[direction]
     assert c2c["new"].shape[0] == nr_rows_new[direction]
 
     w_target_p, w_origin_p = which_target_origin[direction]
 
+    # test that the sum of the weights is 1
     assert (
         int_round(c2c[w_origin_p]["wei_freq_c2c"].sum())
         == data_dict[cat_type][w_origin_p].shape[0]
     )
     assert (
         int_round(c2c[w_target_p]["wei_freq_c2c"].sum())
-        <= data_dict[cat_type][w_target_p].shape[0]
+        == data_dict[cat_type][w_target_p].shape[0]
     )
     assert all(c2c[w_target_p].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
     assert all(c2c[w_origin_p]["wei_freq_c2c"].values == 1)
@@ -74,56 +115,114 @@ def test_cat2cat_base(direction, cat_type):
         == c2c[w_target_p].shape[0]
     )
 
+    # test that cat2cat not influence the original data
     assert data_dict[cat_type]["old"].equals(o)
     assert data_dict[cat_type]["new"].equals(n)
 
 
-def test_cat2cat_custom_freqs():
-    freqs = o_new["code"].value_counts().to_dict()
-    data = cat2cat_data(o_old, o_new, "code", "code", "year")
-    mappings_f = cat2cat_mappings(trans, "backward", freqs)
-    c2c = cat2cat(data, mappings_f)
+@pytest.mark.parametrize("direction", ["backward", "forward"])
+@pytest.mark.parametrize("cat_type", ["str", "int"])
+def test_cat2cat_custom_freqs(direction, cat_type):
+    o = data_dict[cat_type]["old"].copy()
+    n = data_dict[cat_type]["new"].copy()
+    data = cat2cat_data(
+        data_dict[cat_type]["old"], data_dict[cat_type]["new"], "code", "code", "year"
+    )
+    mappings = cat2cat_mappings(
+        data_dict[cat_type]["trans"], direction, data_dict[cat_type]["freqs"][direction]
+    )
+    c2c = cat2cat(data, mappings)
 
+    # result structure
     assert isinstance(c2c, dict)
     assert sorted(list(c2c.keys())) == ["new", "old"]
 
-    assert int_round(c2c["old"]["wei_freq_c2c"].sum()) == o_old.shape[0]
-    assert int_round(c2c["new"]["wei_freq_c2c"].sum()) == o_new.shape[0]
-    assert c2c["new"].shape[0] == o_new.shape[0]
+    # expected number of rows
+    assert c2c["old"].shape[0] == nr_rows_old[direction]
+    assert c2c["new"].shape[0] == nr_rows_new[direction]
 
-    assert all(c2c["old"].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
-    assert all(c2c["new"]["wei_freq_c2c"].values == 1)
+    w_target_p, w_origin_p = which_target_origin[direction]
 
-    mappings = cat2cat_mappings(trans, "backward")
-    c2c_default = cat2cat(data, mappings)
-    assert c2c_default["old"].equals(c2c["old"])
+    # test that the sum of the weights is 1
+    assert (
+        int_round(c2c[w_origin_p]["wei_freq_c2c"].sum())
+        == data_dict[cat_type][w_origin_p].shape[0]
+    )
+    assert (
+        int_round(c2c[w_target_p]["wei_freq_c2c"].sum())
+        == data_dict[cat_type][w_target_p].shape[0]
+    )
+    assert all(c2c[w_target_p].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
+    assert all(c2c[w_origin_p]["wei_freq_c2c"].values == 1)
+    assert (
+        int_round((c2c[w_target_p]["rep_c2c"] * c2c[w_target_p]["wei_naive_c2c"]).sum())
+        == c2c[w_target_p].shape[0]
+    )
 
-    assert o_old.equals(occup.loc[occup.year == 2008, :])
-    assert o_new.equals(occup.loc[occup.year == 2010, :])
+    # test that cat2cat not influence the original data
+    assert data_dict[cat_type]["old"].equals(o)
+    assert data_dict[cat_type]["new"].equals(n)
 
 
-def test_cat2cat_ml():
-    data = cat2cat_data(o_old, o_new, "code", "code", "year")
-    mappings = cat2cat_mappings(trans, "backward")
+@pytest.mark.parametrize("cat_type", ["str", "int"])
+@pytest.mark.parametrize("direction", ["backward", "forward"])
+def test_cat2cat_ml(direction, cat_type):
+    o = data_dict[cat_type]["old"].copy()
+    n = data_dict[cat_type]["new"].copy()
+    data = cat2cat_data(
+        data_dict[cat_type]["old"], data_dict[cat_type]["new"], "code", "code", "year"
+    )
+    mappings = cat2cat_mappings(
+        data_dict[cat_type]["trans"], direction, data_dict[cat_type]["freqs"][direction]
+    )
     ml = cat2cat_ml(
         occup.loc[occup.year >= 2010, :].copy(),
         "code",
         ["salary", "age", "edu", "sex"],
-        [LinearDiscriminantAnalysis()],
+        [DecisionTreeClassifier(), LinearDiscriminantAnalysis()],
     )
     c2c = cat2cat(data, mappings, ml)
 
+    # result structure
     assert isinstance(c2c, dict)
     assert sorted(list(c2c.keys())) == ["new", "old"]
-    assert (
-        int_round(c2c["old"]["wei_LinearDiscriminantAnalysis_c2c"].sum())
-        == o_old.shape[0]
-    )
-    assert c2c["new"].shape[0] == o_new.shape[0]
-    assert all(c2c["new"]["wei_LinearDiscriminantAnalysis_c2c"].values == 1)
 
-    assert o_old.equals(occup.loc[occup.year == 2008, :])
-    assert o_new.equals(occup.loc[occup.year == 2010, :])
+    # expected number of rows
+    assert c2c["old"].shape[0] == nr_rows_old[direction]
+    assert c2c["new"].shape[0] == nr_rows_new[direction]
+
+    w_target_p, w_origin_p = which_target_origin[direction]
+
+    # test that the sum of the weights is 1
+    assert c2c[w_origin_p].shape[0] == data_dict[cat_type][w_origin_p].shape[0]
+    assert (
+        int_round(c2c[w_origin_p]["wei_freq_c2c"].sum())
+        == data_dict[cat_type][w_origin_p].shape[0]
+    )
+    assert (
+        int_round(c2c[w_target_p]["wei_freq_c2c"].sum())
+        == data_dict[cat_type][w_target_p].shape[0]
+    )
+    assert all(c2c[w_target_p].groupby("index_c2c")["wei_freq_c2c"].sum().round() == 1)
+    assert all(c2c[w_origin_p]["wei_freq_c2c"].values == 1)
+    assert (
+        int_round((c2c[w_target_p]["rep_c2c"] * c2c[w_target_p]["wei_naive_c2c"]).sum())
+        == c2c[w_target_p].shape[0]
+    )
+    assert (
+        int_round(c2c[w_target_p]["wei_DecisionTreeClassifier_c2c"].sum())
+        == data_dict[cat_type][w_target_p].shape[0]
+    )
+    assert all(c2c[w_origin_p]["wei_DecisionTreeClassifier_c2c"].values == 1)
+    assert (
+        int_round(c2c[w_target_p]["wei_DecisionTreeClassifier_c2c"].sum())
+        == data_dict[cat_type][w_target_p].shape[0]
+    )
+    assert all(c2c[w_origin_p]["wei_DecisionTreeClassifier_c2c"].values == 1)
+
+    # test that cat2cat not influence the original data
+    assert data_dict[cat_type]["old"].equals(o)
+    assert data_dict[cat_type]["new"].equals(n)
 
 
 def test_cat2cat_multi():
@@ -206,5 +305,6 @@ def test_cat2cat_direct():
         == vert_old.shape[0]
     )
 
+    # test that cat2cat not influence the original data
     assert vert_old.equals(verticals.loc[verticals["v_date"] == "2020-04-01", :])
     assert vert_new.equals(verticals.loc[verticals["v_date"] == "2020-05-01", :])
