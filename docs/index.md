@@ -8,6 +8,4 @@
 example.md
 changelog.md
 autoapi/index
-conduct.md
-contributing.md
 ```
