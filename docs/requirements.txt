@@ -3,5 +3,6 @@ sphinx-autoapi
 sphinx-rtd-theme
 pandas 
 numpy
+myst-parser
 scikit-learn
 importlib_resources

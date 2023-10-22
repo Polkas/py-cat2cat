@@ -6,9 +6,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"cat2cat"
-copyright = u"2022, Maciej Nasinski"
-author = u"Maciej Nasinski"
+project = "cat2cat"
+copyright = "2022, Maciej Nasinski"
+author = "Maciej Nasinski"
 
 # -- General configuration ---------------------------------------------------
 
@@ -16,7 +16,7 @@ author = u"Maciej Nasinski"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "myst_nb",
+    "myst_parser",
     "autoapi.extension",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",

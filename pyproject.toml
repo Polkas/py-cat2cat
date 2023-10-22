@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cat2cat"
-version = "0.1.4.9002"
+version = "0.1.4.9003"
 description = "Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset."
 authors = ["Maciej Nasinski"]
 license = "MIT"
@@ -10,6 +10,9 @@ repository = "https://github.com/polkas/py-cat2cat"
 documentation = "https://py-cat2cat.readthedocs.io/en/latest/"
 keywords = ["panel", "categorical", "longtitudal", "inconsistent", "cat2cat"]
 include = ["CHANGELOG.md"]
+
+[tool.poetry.group.dev.dependencies]
+myst-parser = "^2.0.0"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
