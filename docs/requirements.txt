@@ -1,7 +1,7 @@
-myst-nb==0.16.0
-sphinx-autoapi==1.9.0
-sphinx-rtd-theme==1.0.0
+sphinx
+sphinx-autoapi
+sphinx-rtd-theme
 pandas 
 numpy
-sklearn
+scikit-learn
 importlib_resources
