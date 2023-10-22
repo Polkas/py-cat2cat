@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cat2cat"
-version = "0.1.4.9002"
+version = "0.1.4.9003"
 description = "Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset."
 authors = ["Maciej Nasinski"]
 license = "MIT"
@@ -10,27 +10,37 @@ repository = "https://github.com/polkas/py-cat2cat"
 documentation = "https://py-cat2cat.readthedocs.io/en/latest/"
 keywords = ["panel", "categorical", "longtitudal", "inconsistent", "cat2cat"]
 include = ["CHANGELOG.md"]
+classifiers = [
+"Development Status :: 3 - Alpha",
+"Programming Language :: Python",
+"Programming Language :: Python :: 3",
+"Programming Language :: Python :: 3.8",
+"Programming Language :: Python :: 3.9",
+"Programming Language :: Python :: 3.10",
+"Programming Language :: Python :: 3.11",
+"Programming Language :: Python :: Implementation :: PyPy",
+]
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8,<3.12"
 numpy = "^1.23.1"
 pandas = "^1.4.3"
 scikit-learn = "^1.1.2"
 importlib-resources = "^5.9.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^7.1.2"
 flake8 = "^5.0.4"
 black = "^22.6.0"
 pytest-cov = "^3.0.0"
-Sphinx = "^5.1.1"
-myst-nb = "^0.16.0"
-sphinx-autoapi = "^1.9.0"
-sphinx-rtd-theme = "^1.0.0"
+Sphinx = "^6.2.1"
+sphinx-autoapi = "^3.0.0"
+sphinx-rtd-theme = "^1.3.0"
+myst-parser = "^2.0.0"
 snakeviz = "^2.1.1"
 mypy = "^0.982"
 
