@@ -3,7 +3,7 @@ from cat2cat import cat2cat
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 from cat2cat.cat2cat_utils import dummy_c2c
 from pandas import concat, DataFrame
-from numpy import round, setdiff1d
+from numpy import round, setdiff1d, nan
 import pytest
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.tree import DecisionTreeClassifier
@@ -30,12 +30,11 @@ o_new_int["code"] = o_new_int["code"].astype(int)
 trans = load_trans()
 # impute missing values
 trans = concat(
-    [trans, DataFrame({"old": "99999", "new": setdiff1d(o_new.code, trans.new)})]
+    [trans, DataFrame({"old": nan, "new": setdiff1d(o_new.code, trans.new)})]
 )
 
 trans_int = trans.copy()
-trans_int.loc[trans_int["old"].isnull(), "old"] = "99999"
-trans_int = trans_int.astype({"old": int, "new": int})
+trans_int = trans_int.astype({"old": "Int64", "new": "Int64"})
 
 nr_rows_old = {"backward": 227662, "forward": 17223}
 nr_rows_new = {"backward": 17323, "forward": 18680}

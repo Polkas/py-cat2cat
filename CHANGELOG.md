@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.1.4.9002
+## v0.1.4.9004
 
 - Improved the lack of support for NaN and None in the `get_mappings`.
 - Fixed a bug that `cat2cat_ml.features` can be only a `list` not a `Sequence`.

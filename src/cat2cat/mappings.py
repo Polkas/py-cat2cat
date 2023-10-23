@@ -2,6 +2,7 @@ from pandas import DataFrame
 from numpy import ndarray, unique, repeat, array, round, unique, sort, isnan
 
 from collections.abc import Iterable
+from collections import OrderedDict
 from typing import Union, Optional, Any, List, Dict, Sequence
 
 __all__ = ["get_mappings", "cat_apply_freq", "get_freqs"]
@@ -22,20 +23,19 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[Any, List[Any]]
     Returns:
         Dict[str, Dict[Any, List[Any]]]: dict with 2 internal dicts, `to_old` and `to_new`.
     Note:
-        Please covert all numpy.NaN to some numeric value like 999999.
-        None`s in a pandas column have to be converted to a "None" character.
+        There was made an effort to handle missings properly but please try to avoid of using NaN or None.
 
     >>> from cat2cat.mappings import get_mappings
-    >>> from numpy import array
+    >>> from numpy import array, nan
     >>> trans = array([
-    ...   [1111, 111101], [1111, 111102], [1123, 111405],
-    ...   [1212, 112006], [1212, 112008], [1212, 112090],
+    ...   [1111, 111101], [1111, 111102], [1123, 111405], [nan, 111405],
+    ...   [1212, 112006], [1212, 112008], [1212, 112090], [1212, nan],
     ... ])
     >>> mappings = get_mappings(trans)
     >>> mappings["to_old"]
-    {112006: [1212], 112008: [1212], 111405: [1123], 112090: [1212], 111101: [1111], 111102: [1111]}
+    {111101.0: [1111.0], 111102.0: [1111.0], 111405.0: [1123.0, nan], 112006.0: [1212.0], 112008.0: [1212.0], 112090.0: [1212.0], nan: [1212.0]}
     >>> mappings["to_new"]
-    {1123: [111405], 1212: [112006, 112008, 112090], 1111: [111101, 111102]}
+    {1111.0: [111101.0, 111102.0], 1123.0: [111405.0], 1212.0: [112006.0, 112008.0, 112090.0, nan], nan: [111405.0]}
     """
 
     assert (len(x.shape) == 2) and (
@@ -62,8 +62,8 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[Any, List[Any]]
         ff[which_ff_null | (ff == None)] = "None"
         ss[which_ss_null | (ss == None)] = "None"
 
-    from_old = unique(ff)
-    from_new = unique(ss)
+    from_old = list(OrderedDict.fromkeys(ff))
+    from_new = list(OrderedDict.fromkeys(ss))
 
     to_old = dict()
     for e in from_new:
