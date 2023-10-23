@@ -33,12 +33,9 @@ def cat2cat(
         When ml model is broken then weights from simple frequencies are taken.
         `knn` method is recommended for smaller datasets.
 
-        2. Please be sure that the categorical variable is of the same type in all cases.
+        2. Please be sure that the categorical variable is of the same type in all places.
         `mappings.trans` arg columns and the `data.cat_var` column have to be of the same type.
-        When ml part applied `ml.cat_var` has to have the same type too.
-
-        3. Please covert all numpy.NaN to some numeric value like 999999.
-        None`s in a pandas column have to be converted to a "None" character.
+        When ml part is applied then `ml.cat_var` has to have the same type too.
         Changes have to be made at the same time for the mapping table and datasets.
 
     >>> from cat2cat import cat2cat
@@ -156,7 +153,6 @@ def _cat2cat_ml(
     for target_cat in list(mapp.keys()):
         base_cats = mapp[target_cat]
         ml_cat_var = ml.data[ml.cat_var]
-
         if (not any(in1d(base_cats, ml_cat_var.unique()))) or (len(base_cats) == 1):
             continue
 

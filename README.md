@@ -24,7 +24,9 @@
 
 There is offered the cat2cat procedure to map a categorical variable according to a mapping (transition) table between two different time points. The mapping (transition) table should to have a candidate for each category from the targeted for an update period. The main rule is to replicate the observation if it could be assigned to a few categories, then using simple frequencies or statistical methods to approximate probabilities of being assigned to each of them.
 
-This algorithm was invented and implemented in the paper by (Nasinski, Majchrowska and Broniatowska (2020) doi:10.24425/cejeme.2020.134747).
+**This algorithm was invented and implemented in the paper by [(Nasinski, Majchrowska and Broniatowska (2020))](https://doi.org/10.24425/cejeme.2020.134747).**
+
+**For more details please read the paper by [(Nasinski, Gajowniczek (2023))](https://doi.org/10.1016/j.softx.2023.101525).**
 
 ## Installation
 
