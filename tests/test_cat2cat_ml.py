@@ -18,3 +18,10 @@ ml = cat2cat_ml(
 )
 cat2cat_ml_run(mappings=mappings, ml=ml)
 
+
+def test_cat2cat_ml_run_repr():
+    pass
+
+
+def test_cat2cat_ml_run_get_raw():
+    pass
