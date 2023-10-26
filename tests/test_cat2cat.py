@@ -61,22 +61,6 @@ data_dict = {
 which_target_origin = {"backward": ("old", "new"), "forward": ("new", "old")}
 
 
-def utils_test_structure(data, direction, nr_rows_old, nr_rows_new):
-    pass
-
-
-def utils_test_expected():
-    pass
-
-
-def utils_test_sum1():
-    pass
-
-
-def utils_test_copy():
-    pass
-
-
 @pytest.mark.parametrize("direction", ["backward", "forward"])
 @pytest.mark.parametrize("cat_type", ["str", "int"])
 def test_cat2cat_base(direction, cat_type):

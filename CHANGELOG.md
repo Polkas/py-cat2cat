@@ -1,7 +1,8 @@
 # Changelog
 
-## v0.1.4.9004
+## v0.1.4.9005
 
+- New `cat2cat_ml_run` function to check the ml models performance before `cat2cat` with ml option is run. Now, the ml models are more transparent.
 - Improved the lack of support for NaN and None in the `get_mappings`.
 - Fixed a bug that `cat2cat_ml.features` can be only a `list` not a `Sequence`.
 - Fixed assertion message and docs for the `freqs` argument in the `cat2cat_mappings`.
