@@ -19,6 +19,7 @@ class cat2cat_ml_run_results:
             Please check out the `cat2cat.dataclass.cat2cat_mappings` for more information.
         ml (cat2cat_ml): dataclass with ml related arguments.
             Please check out the `cat2cat.dataclass.cat2cat_ml` for more information.
+        kwargs (Dict): additional arguments passed to the `cat2cat_ml_run` function.
     Returns:
         cat2cat_ml_run_results class instance with the following attributes:
         res (Dict): raw results from the cat2cat_ml_run function call
@@ -31,10 +32,13 @@ class cat2cat_ml_run_results:
         get_raw: get raw results
     """
 
-    def __init__(self, res, mappings, ml) -> Dict:
+    def __init__(
+        self, res: Dict, mappings: cat2cat_mappings, ml: cat2cat_ml, kwargs: Dict
+    ) -> None:
         self.res = res
         self.mappings = mappings
         self.ml = ml
+        self.kwargs = kwargs
         self.models_names = [type(m).__name__ for m in self.ml.models]
 
         mean_acc = dict()
@@ -88,7 +92,7 @@ class cat2cat_ml_run_results:
                 + "\n"
             )
         res += "Features: {}".format(self.ml.features) + "\n"
-        res += "Test sample size: {}".format(self.ml.test_size) + "\n"
+        res += "Test sample size: {}".format(self.kwargs.get("test_size", 0.2)) + "\n"
         return res
 
 
@@ -160,17 +164,19 @@ def cat2cat_ml_run(
     models = ml.models
     models_names = [type(m).__name__ for m in models]
 
-    train_g = {n: g for n, g in ml.data[features + [ml.cat_var]].groupby(ml.cat_var)}
+    train_g = {
+        n: g for n, g in ml.data[list(features) + [ml.cat_var]].groupby(ml.cat_var)
+    }
 
     res = dict()
     for cat in mapp.keys():
         try:
-            matched_cat = mapp.get(cat, None)
-            g_name = "&".join(matched_cat)
-            res[g_name] = {
+            matched_cat = mapp.get(cat, [])
+            acc_na = dict(zip(models_names, repeat(NaN, len(models_names))))
+            res[cat] = {
                 "ncat": len(matched_cat),
                 "naive": 1 / len(matched_cat),
-                "acc": dict(zip(models_names, repeat(NaN, len(models_names)))),
+                "acc": acc_na,
                 "freq": NaN,
             }
             data_small_g_list = list()
@@ -199,19 +205,19 @@ def cat2cat_ml_run(
 
             gcounts = y_train.value_counts()
             gfreq_max = gcounts.index[0]
-            res[g_name]["freq"] = nanmean(gfreq_max == y_test)
+            res[cat]["freq"] = nanmean(gfreq_max == y_test)
 
             if X_test.shape[0] == 0 | X_train.shape[0] < 5:
                 continue
 
             for m in models:
-                ml_name = type(m).__name__
+                ml_name = str(type(m).__name__)
                 m.fit(X_train, y_train)
-                res[g_name]["acc"][ml_name] = m.score(X_test, y_test)
+                res[cat]["acc"][ml_name] = m.score(X_test, y_test)  # type: ignore
         except:
             continue
 
-    return cat2cat_ml_run_results(res, mappings, ml)
+    return cat2cat_ml_run_results(res, mappings, ml, kwargs)
 
 
 def _cat2cat_ml(
