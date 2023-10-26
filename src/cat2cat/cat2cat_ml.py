@@ -107,6 +107,7 @@ def cat2cat_ml_run(
         **kwargs: additional arguments passed to the `cat2cat_ml_run` function.
             min_match (float): minimum share of categories from the base period that have to be matched in the mapping table. Between 0 and 1. Default 0.8.
             test_size (float): share of the data used for testing. Between 0 and 1. Default 0.2.
+            split_seed (int): random seed for the train_test_split function. Default 42.
 
     Returns:
         cat2cat_ml_run_class
@@ -130,7 +131,7 @@ def cat2cat_ml_run(
     ...    occup.loc[occup.year <= 2008, :].copy(),
     ...    "code",
     ...    ["salary", "age", "edu", "sex"],
-    ...    [DecisionTreeClassifier(), LinearDiscriminantAnalysis()]
+    ...    [DecisionTreeClassifier(random_state=1234), LinearDiscriminantAnalysis()]
     ... )
     >>> cat2cat_ml_run(mappings = mappings, ml = ml)
 
@@ -141,8 +142,8 @@ def cat2cat_ml_run(
     assert isinstance(ml, cat2cat_ml), "ml arg has to be cat2cat_ml instance"
     assert isinstance(kwargs, dict), "kwargs arg has to be a dict"
     assert set(kwargs.keys()).issubset(
-        ["min_match", "test_size"]
-    ), "possible kwargs are min_match and test_size"
+        ["min_match", "test_size", "split_seed"]
+    ), "possible kwargs are min_match, split_seed and test_size"
 
     mapps = get_mappings(mappings.trans)
 
@@ -192,7 +193,7 @@ def cat2cat_ml_run(
             data_small_g = concat([train_g.get(g) for g in matched_cat], axis=0)
 
             if (
-                (data_small_g.shape[0] < 5)
+                (data_small_g.shape[0] < 10)
                 or (len(matched_cat) < 2)
                 or (sum(in1d(matched_cat, data_small_g[ml.cat_var])) == 1)
             ):
@@ -202,14 +203,14 @@ def cat2cat_ml_run(
                 data_small_g[features],
                 data_small_g[ml.cat_var],
                 test_size=kwargs.get("test_size", 0.2),
-                random_state=42,
+                random_state=kwargs.get("split_seed", 42),
             )
 
             gcounts = y_train.value_counts()
             gfreq_max = gcounts.index[0]
             res[cat]["freq"] = nanmean(gfreq_max == y_test)
 
-            if X_test.shape[0] == 0 | X_train.shape[0] < 5:
+            if (X_test.shape[0] == 0) or (X_train.shape[0] < 5):
                 continue
 
             for m in models:

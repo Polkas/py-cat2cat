@@ -94,17 +94,14 @@ data_final.groupby(["year"]).sample(5).loc[:, sub_cols]
 ```python
 from sklearn.neighbors import KNeighborsClassifier
 from cat2cat import cat2cat_ml_run
-from numpy.random import seed
 
 # ml dataclass, one of the arguments for the cat2cat function
 ml = cat2cat_ml(
     data = o_new, 
     cat_var = "code", 
     features = ["salary", "age", "edu"], 
-    models = [KNeighborsClassifier()]
+    models = [KNeighborsClassifier(random_state = 1234)]
 )
-
-seed(1234)
 
 cat2cat_ml_run(mappings, ml)
 
