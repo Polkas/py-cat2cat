@@ -58,10 +58,7 @@ class cat2cat_ml_run_results:
             2,
         )
         for m in self.models_names:
-            vals = [
-                self.res.get(g, {}).get(m, NaN)
-                for g in self.res.keys()
-            ]
+            vals = [self.res.get(g, {}).get(m, NaN) for g in self.res.keys()]
             mean_acc[m] = round(nanmean(vals), 3)
             percent_failed[m] = round(sum(isnan(vals)) / len(vals) * 100, 3)
             percent_better[m] = round(
@@ -217,7 +214,7 @@ def cat2cat_ml_run(
 
             for m in models:
                 ml_name = str(type(m).__name__)
-                m.fit(X_train, y_train)
+                m.fit(X_train, y_train)  # type: ignore
                 res[cat][ml_name] = m.score(X_test, y_test)  # type: ignore
         except:
             continue
