@@ -59,7 +59,7 @@ class cat2cat_ml_run_results:
         )
         for m in self.models_names:
             vals = [
-                self.res.get(g, {"acc": {m: NaN}}).get("acc").get(m, NaN)
+                self.res.get(g, {}).get(m, NaN)
                 for g in self.res.keys()
             ]
             mean_acc[m] = round(nanmean(vals), 3)
@@ -142,6 +142,10 @@ def cat2cat_ml_run(
         mappings, cat2cat_mappings
     ), "mappings arg has to be cat2cat_mappings instance"
     assert isinstance(ml, cat2cat_ml), "ml arg has to be cat2cat_ml instance"
+    assert isinstance(kwargs, dict), "kwargs arg has to be a dict"
+    assert set(kwargs.keys()).issubset(
+        ["min_match", "test_size"]
+    ), "possible kwargs are min_match and test_size"
 
     mapps = get_mappings(mappings.trans)
 
@@ -173,13 +177,13 @@ def cat2cat_ml_run(
     for cat in mapp.keys():
         try:
             matched_cat = mapp.get(cat, [])
-            acc_na = dict(zip(models_names, repeat(NaN, len(models_names))))
             res[cat] = {
-                "ncat": len(matched_cat),
                 "naive": 1 / len(matched_cat),
-                "acc": acc_na,
                 "freq": NaN,
             }
+            for m in models_names:
+                res[cat][m] = NaN
+
             data_small_g_list = list()
             for g in matched_cat:
                 if g not in train_g.keys():
@@ -214,7 +218,7 @@ def cat2cat_ml_run(
             for m in models:
                 ml_name = str(type(m).__name__)
                 m.fit(X_train, y_train)
-                res[cat]["acc"][ml_name] = m.score(X_test, y_test)  # type: ignore
+                res[cat][ml_name] = m.score(X_test, y_test)  # type: ignore
         except:
             continue
 
