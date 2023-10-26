@@ -79,7 +79,7 @@ class cat2cat_ml_run_results:
     def __repr__(self) -> str:
         res = ""
         for k, v in self.mean_acc.items():
-            res += "Accuracy {}: {}".format(k, v) + "\n"
+            res += "Average Accuracy {}: {}".format(k, v) + "\n"
         res += "\n"
         for k, v in self.percent_failed.items():
             res += "Percent of failed {}: {}".format(k, v) + "\n"
@@ -91,6 +91,7 @@ class cat2cat_ml_run_results:
                 )
                 + "\n"
             )
+        res += "\n"
         res += "Features: {}".format(self.ml.features) + "\n"
         res += "Test sample size: {}".format(self.kwargs.get("test_size", 0.2)) + "\n"
         return res
