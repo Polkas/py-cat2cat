@@ -1,5 +1,6 @@
 from pandas import DataFrame, concat
 from numpy import repeat, setdiff1d, in1d, sum, NaN, nanmean, isnan, round
+from numpy.ma import masked_invalid
 
 from sklearn.model_selection import train_test_split
 
@@ -22,12 +23,12 @@ class cat2cat_ml_run_results:
         kwargs (Dict): additional arguments passed to the `cat2cat_ml_run` function.
     Returns:
         cat2cat_ml_run_results class instance with the following attributes:
-        res (Dict): raw results from the cat2cat_ml_run function call
-        mean_acc (Dict): mean accuracy for each model
-        percent_failed (Dict): percent of failed models for each model
-        percent_better (Dict): percent of better models over most frequent category solution for each model
-        mappings (cat2cat_mappings): initial mappings dataclass with mappings related arguments.
-        ml (cat2cat_ml): initial ml dataclass with ml related arguments.
+          res (Dict): raw results from the cat2cat_ml_run function call
+          mean_acc (Dict): mean accuracy for each model
+          percent_failed (Dict): percent of failed models for each model
+          percent_better (Dict): percent of better models over most frequent category solution for each model
+          mappings (cat2cat_mappings): initial mappings dataclass with mappings related arguments.
+          ml (cat2cat_ml): initial ml dataclass with ml related arguments.
     Methods:
         get_raw: get raw results
     """
@@ -43,7 +44,8 @@ class cat2cat_ml_run_results:
 
         mean_acc = dict()
         percent_failed = dict()
-        percent_better = dict()
+        percent_better_most = dict()
+        percent_better_naive = dict()
 
         mean_acc["naive"] = round(
             nanmean(
@@ -61,13 +63,17 @@ class cat2cat_ml_run_results:
             vals = [self.res.get(g, {}).get(m, NaN) for g in self.res.keys()]
             mean_acc[m] = round(nanmean(vals), 3)
             percent_failed[m] = round(sum(isnan(vals)) / len(vals) * 100, 3)
-            percent_better[m] = round(
-                sum(vals > mean_acc["most_freq"]) / len(vals) * 100, 3
+            percent_better_most[m] = round(
+                nanmean(masked_invalid(vals) > mean_acc["most_freq"]) * 100, 3
+            )
+            percent_better_naive[m] = round(
+                nanmean(masked_invalid(vals) > mean_acc["naive"]) * 100, 3
             )
 
         self.mean_acc = mean_acc
         self.percent_failed = percent_failed
-        self.percent_better = percent_better
+        self.percent_better_most = percent_better_most
+        self.percent_better_naive = percent_better_naive
 
     def get_raw(self) -> Dict:
         """Get raw results"""
@@ -81,16 +87,21 @@ class cat2cat_ml_run_results:
         for k, v in self.percent_failed.items():
             res += "Percent of failed {}: {}".format(k, v) + "\n"
         res += "\n"
-        for k, v in self.percent_better.items():
+        for k, v in self.percent_better_most.items():
             res += (
                 "Percent of better {} over most frequent category solution: {}".format(
                     k, v
                 )
                 + "\n"
             )
+        for k, v in self.percent_better_naive.items():
+            res += "Percent of better {} over naive solution: {}".format(k, v) + "\n"
         res += "\n"
         res += "Features: {}".format(self.ml.features) + "\n"
-        res += "Test sample size: {}".format(self.kwargs.get("test_size", 0.2)) + "\n"
+        res += (
+            "Test sample size: {}".format(self.kwargs.get("test_prop", 0.2) * 100)
+            + "\n"
+        )
         return res
 
 
@@ -106,7 +117,7 @@ def cat2cat_ml_run(
             Please check out the `cat2cat.dataclass.cat2cat_ml` for more information.
         **kwargs: additional arguments passed to the `cat2cat_ml_run` function.
             min_match (float): minimum share of categories from the base period that have to be matched in the mapping table. Between 0 and 1. Default 0.8.
-            test_size (float): share of the data used for testing. Between 0 and 1. Default 0.2.
+            test_prop (float): share of the data used for testing. Between 0 and 1. Default 0.2.
             split_seed (int): random seed for the train_test_split function. Default 42.
 
     Returns:
@@ -126,14 +137,15 @@ def cat2cat_ml_run(
     >>> occup = load_occup()
     >>> o_old = occup.loc[occup.year == 2008, :].copy()
     >>> o_new = occup.loc[occup.year == 2010, :].copy()
-    >>> mappings = cat2cat_mappings(trans = trans, direction = "forward")
+    >>> mappings = cat2cat_mappings(trans = trans, direction = "backward")
     >>> ml = cat2cat_ml(
-    ...    occup.loc[occup.year <= 2008, :].copy(),
+    ...    occup.loc[occup.year >= 2010, :].copy(),
     ...    "code",
     ...    ["salary", "age", "edu", "sex"],
     ...    [DecisionTreeClassifier(random_state=1234), LinearDiscriminantAnalysis()]
     ... )
     >>> cat2cat_ml_run(mappings = mappings, ml = ml)
+    ...
 
     """
     assert isinstance(
@@ -142,8 +154,8 @@ def cat2cat_ml_run(
     assert isinstance(ml, cat2cat_ml), "ml arg has to be cat2cat_ml instance"
     assert isinstance(kwargs, dict), "kwargs arg has to be a dict"
     assert set(kwargs.keys()).issubset(
-        ["min_match", "test_size", "split_seed"]
-    ), "possible kwargs are min_match, split_seed and test_size"
+        ["min_match", "test_prop", "split_seed"]
+    ), "possible kwargs are min_match, split_seed and test_prop"
 
     mapps = get_mappings(mappings.trans)
 
@@ -176,7 +188,7 @@ def cat2cat_ml_run(
         try:
             matched_cat = mapp.get(cat, [])
             res[cat] = {
-                "naive": 1 / len(matched_cat),
+                "naive": NaN,
                 "freq": NaN,
             }
             for m in models_names:
@@ -187,6 +199,7 @@ def cat2cat_ml_run(
                 if g not in train_g.keys():
                     continue
                 data_small_g_list.append(train_g.get(g))
+
             if len(data_small_g_list) == 0:
                 continue
 
@@ -198,6 +211,8 @@ def cat2cat_ml_run(
                 or (sum(in1d(matched_cat, data_small_g[ml.cat_var])) == 1)
             ):
                 continue
+
+            res[cat]["naive"] = 1 / len(matched_cat)
 
             X_train, X_test, y_train, y_test = train_test_split(
                 data_small_g[features],
@@ -238,6 +253,9 @@ def _cat2cat_ml(
 
         data_ml_train = ml.data.loc[ml_cat_index, :]
         data_ml_target = target_df.loc[target_cat_index, :]
+
+        if (data_ml_target.shape[0] == 0) or (data_ml_train.shape[0] < 5):
+            continue
 
         target_cats = data_ml_target["g_new_c2c"]
         data_ml_target_uniq = data_ml_target.drop_duplicates(
