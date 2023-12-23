@@ -26,7 +26,7 @@ def get_mappings(x: Table) -> Dict[str, Dict[Any, List[Any]]]:
     Note:
         There was made an effort to handle missings properly but please try to avoid of using NaN or None.
         It is recommended to use string or float types.
-
+        Alternative solution can be representing missing values as a specific number (9999) or string ("Missing").
 
     >>> from cat2cat.mappings import get_mappings
     >>> from numpy import array, nan
