@@ -3,12 +3,13 @@ from numpy import ndarray, unique, repeat, array, round, unique, sort, isnan
 
 from collections.abc import Iterable
 from collections import OrderedDict
-from typing import Union, Optional, Any, List, Dict, Sequence
+from typing import Union, Optional, Any, List, Dict, Sequence, TypeVar
 
 __all__ = ["get_mappings", "cat_apply_freq", "get_freqs"]
 
+Table = TypeVar("Table", DataFrame, ndarray)
 
-def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[Any, List[Any]]]:
+def get_mappings(x: Table) -> Dict[str, Dict[Any, List[Any]]]: 
     """Transforming a mapping table with mappings to two associative lists
 
     Transforming a transition table with mappings to two associative lists
@@ -37,23 +38,56 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[Any, List[Any]]
     >>> mappings["to_new"]
     {1111.0: [111101.0, 111102.0], 1123.0: [111405.0], 1212.0: [112006.0, 112008.0, 112090.0, nan], nan: [111405.0]}
     """
-
     assert (len(x.shape) == 2) and (
         x.shape[1] == 2
     ), "x should have 2 dimensions and the second one is equal to 2 (columns)"
 
     if isinstance(x, DataFrame):
-        ff = x.iloc[:, 0].copy()
-        which_ff_null = ff.isnull()
-        ff = ff.values
-        ss = x.iloc[:, 1].copy()
-        which_ss_null = ss.isnull()
-        ss = ss.values
+        return get_mappings_df(x)
     elif isinstance(x, ndarray):
-        ff = x[:, 0].copy()
-        ss = x[:, 1].copy()
+        return get_mappings_array(x)
     else:
-        raise (TypeError)
+        raise TypeError("get_mappings input has to be ndarray or DataFrame")
+
+def get_mappings_array(x: ndarray) -> Dict[str, Dict[Any, List[Any]]]:
+    ff = x[:, 0].copy()
+    ss = x[:, 1].copy()
+
+    assert ff.dtype == ss.dtype
+    col_type = ff.dtype
+
+    from_old = list(OrderedDict.fromkeys(ff))
+    from_new = list(OrderedDict.fromkeys(ss))
+
+    to_old = dict()
+    for e in from_new:
+        if (col_type in [float, int]) and isnan(e):
+            idx = isnan(ss)
+        else:
+            idx = ss == e
+
+        # sorted so results are stable
+        to_old[e] = sorted(unique(ff[idx]))
+
+    to_new = dict()
+    for e in from_old:
+        if (col_type in [float, int]) and isnan(e):
+            idx = isnan(ff)
+        else:
+            idx = ff == e
+
+        # sorted so results are stable
+        to_new[e] = sorted(unique(ss[idx]))
+
+    return dict(to_old=to_old, to_new=to_new)
+
+def get_mappings_df(x: DataFrame) -> Dict[str, Dict[Any, List[Any]]]:
+    ff = x.iloc[:, 0].copy()
+    which_ff_null = ff.isnull()
+    ff = ff.values
+    ss = x.iloc[:, 1].copy()
+    which_ss_null = ss.isnull()
+    ss = ss.values
 
     assert ff.dtype == ss.dtype
     col_type = ff.dtype
@@ -86,7 +120,6 @@ def get_mappings(x: Union[DataFrame, ndarray]) -> Dict[str, Dict[Any, List[Any]]
         to_new[e] = sorted(unique(ss[idx]))
 
     return dict(to_old=to_old, to_new=to_new)
-
 
 def get_freqs(
     x: Sequence[Any], multiplier: Optional[Sequence[int]] = None

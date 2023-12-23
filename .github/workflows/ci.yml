@@ -25,17 +25,14 @@ jobs:
       - name: Check-out repository
         uses: actions/checkout@v2
 
-      - name: Install poetry
-        uses: snok/install-poetry@v1
-
       - name: Install package
-        run: poetry install
+        run: pip install -r requirements.txt
 
       - name: Test with pytest
-        run: poetry run python -m pytest tests --doctest-modules --cov=cat2cat --cov-report=xml
+        run: python -m pytest tests --doctest-modules --cov=cat2cat --cov-report=xml
 
       - name: Test with mypy
-        run: poetry run mypy src
+        run: mypy src
         
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

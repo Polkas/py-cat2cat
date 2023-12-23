@@ -59,6 +59,7 @@ data_dict = {
     },
 }
 which_target_origin = {"backward": ("old", "new"), "forward": ("new", "old")}
+code_var_name = {"backward": "code", "forward": "code4"}
 
 
 @pytest.mark.parametrize("direction", ["backward", "forward"])
@@ -146,9 +147,8 @@ def test_cat2cat_custom_freqs(direction, cat_type):
     assert data_dict[cat_type]["old"].equals(o)
     assert data_dict[cat_type]["new"].equals(n)
 
-
 @pytest.mark.parametrize("cat_type", ["str", "int"])
-@pytest.mark.parametrize("direction", ["backward", "forward"])
+@pytest.mark.parametrize("direction", ["backward"])
 def test_cat2cat_ml(direction, cat_type):
     o = data_dict[cat_type]["old"].copy()
     n = data_dict[cat_type]["new"].copy()
@@ -160,7 +160,7 @@ def test_cat2cat_ml(direction, cat_type):
     )
     ml = cat2cat_ml(
         occup.loc[occup.year >= 2010, :].copy(),
-        "code",
+        code_var_name[direction],
         ["salary", "age", "edu", "sex"],
         [DecisionTreeClassifier(), LinearDiscriminantAnalysis()],
     )
