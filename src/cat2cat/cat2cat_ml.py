@@ -237,7 +237,6 @@ def cat2cat_ml_run(
 
     return cat2cat_ml_run_results(res, mappings, ml, kwargs)
 
-
 def _cat2cat_ml(
     ml: cat2cat_ml, mapp: Dict[Any, Any], target_df: DataFrame, cat_var_target: str
 ) -> None:
@@ -245,6 +244,7 @@ def _cat2cat_ml(
     for target_cat in list(mapp.keys()):
         base_cats = mapp[target_cat]
         ml_cat_var = ml.data[ml.cat_var]
+
         if (not any(in1d(base_cats, ml_cat_var.unique()))) or (len(base_cats) == 1):
             continue
 
