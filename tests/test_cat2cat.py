@@ -34,7 +34,7 @@ trans = concat(
 )
 
 trans_int = trans.copy()
-trans_int = trans_int.astype({"old": "Int64", "new": "Int64"})
+trans_int = trans_int.astype({"old": "float", "new": "float"})
 
 nr_rows_old = {"backward": 227662, "forward": 17223}
 nr_rows_new = {"backward": 17323, "forward": 18680}
@@ -59,7 +59,7 @@ data_dict = {
     },
 }
 which_target_origin = {"backward": ("old", "new"), "forward": ("new", "old")}
-code_var_name = {"backward": "code", "forward": "code4"}
+ml_test_data = {"backward": {"var": "code", "data": occup.loc[occup.year >= 2010, :].copy()}, "forward": {"var": "code4", "data": occup.loc[occup.year <= 2008, :].copy()}}
 
 
 @pytest.mark.parametrize("direction", ["backward", "forward"])
@@ -148,7 +148,7 @@ def test_cat2cat_custom_freqs(direction, cat_type):
     assert data_dict[cat_type]["new"].equals(n)
 
 @pytest.mark.parametrize("cat_type", ["str", "int"])
-@pytest.mark.parametrize("direction", ["backward"])
+@pytest.mark.parametrize("direction", ["backward", "forward"])
 def test_cat2cat_ml(direction, cat_type):
     o = data_dict[cat_type]["old"].copy()
     n = data_dict[cat_type]["new"].copy()
@@ -159,8 +159,8 @@ def test_cat2cat_ml(direction, cat_type):
         data_dict[cat_type]["trans"], direction, data_dict[cat_type]["freqs"][direction]
     )
     ml = cat2cat_ml(
-        occup.loc[occup.year >= 2010, :].copy(),
-        code_var_name[direction],
+        ml_test_data[direction]["data"],
+        ml_test_data[direction]["var"],
         ["salary", "age", "edu", "sex"],
         [DecisionTreeClassifier(), LinearDiscriminantAnalysis()],
     )

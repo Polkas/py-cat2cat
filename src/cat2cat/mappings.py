@@ -25,6 +25,8 @@ def get_mappings(x: Table) -> Dict[str, Dict[Any, List[Any]]]:
         Dict[str, Dict[Any, List[Any]]]: dict with 2 internal dicts, `to_old` and `to_new`.
     Note:
         There was made an effort to handle missings properly but please try to avoid of using NaN or None.
+        It is recommended to use string or float types.
+
 
     >>> from cat2cat.mappings import get_mappings
     >>> from numpy import array, nan
@@ -38,9 +40,9 @@ def get_mappings(x: Table) -> Dict[str, Dict[Any, List[Any]]]:
     >>> mappings["to_new"]
     {1111.0: [111101.0, 111102.0], 1123.0: [111405.0], 1212.0: [112006.0, 112008.0, 112090.0, nan], nan: [111405.0]}
     """
-    assert (len(x.shape) == 2) and (
+    assert hasattr(x, "shape") and ((len(x.shape) == 2) and (
         x.shape[1] == 2
-    ), "x should have 2 dimensions and the second one is equal to 2 (columns)"
+    )), "x should have 2 dimensions and the second one is equal to 2 (columns)"
 
     if isinstance(x, DataFrame):
         return get_mappings_df(x)

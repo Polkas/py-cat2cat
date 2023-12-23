@@ -38,6 +38,8 @@ def cat2cat(
         `mappings.trans` arg columns and the `data.cat_var` column have to be of the same type.
         When ml part is applied then `ml.cat_var` has to have the same type too.
         Changes have to be made at the same time for the mapping table and datasets.
+        Missing values in the mapping table or categorical variable can cause problems.
+        It is recommended to use string or float types in the mapping table and for categorical variable.
 
     >>> from cat2cat import cat2cat
     >>> from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml

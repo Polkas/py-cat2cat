@@ -123,6 +123,21 @@ def test_get_mappings_DataFrame():
     assert str(actual) == str(expected)
 
 
+@pytest.mark.parametrize("x", [1, "", [], {}])
+def test_get_mappings_wrong(x):
+    with pytest.raises(AssertionError):
+        get_mappings(x)
+
+
+class class_with_shape:
+    shape = [1, 2]
+
+
+def test_get_mappings_shape():
+    with pytest.raises(TypeError):
+        get_mappings(class_with_shape())
+
+
 # test with NaNs
 def test_get_mappings_nan_str():
     trans2 = trans.copy()
@@ -237,21 +252,6 @@ def test_get_mappings_nan_float():
         },
     }
     assert str(actual) == str(expected)
-
-
-@pytest.mark.parametrize("x", [1, "", [], {}])
-def test_get_mappings_wrong(x):
-    with pytest.raises(AttributeError):
-        get_mappings(x)
-
-
-class class_with_shape:
-    shape = [1, 2]
-
-
-def test_get_mappings_shape():
-    with pytest.raises(TypeError):
-        get_mappings(class_with_shape())
 
 
 def test_get_mappings_different_types():
