@@ -47,4 +47,4 @@ jobs:
           verbose: true
 
       - name: Build documentation
-        run: poetry run make html --directory docs/
+        run: make html --directory docs/
