@@ -9,7 +9,7 @@ authors = [
 ]
 description = "Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset."
 readme = "README.md"
-version = "0.1.5"
+version = "0.1.6"
 requires-python = ">=3.8"
 keywords = ["panel", "categorical", "longtitudal", "inconsistent", "cat2cat"]
 license = {text = "Apache License 2.0 | file LICENSE"}
@@ -44,10 +44,10 @@ styler = ["flake8", "black"]
 all = ["cat2cat[test,docs,build,benchmark,styler]"]
 
 [project.urls]
-homepage = "https://github.com/Polkas/multidim"
-documentation = "https://multidim.readthedocs.io/en/latest/"
-repository = "https://github.com/Polkas/multidim"
-changelog = "https://raw.githubusercontent.com/Polkas/multidim/main/CHANGELOG.md"
+homepage = "https://github.com/Polkas/py-cat2cat"
+documentation = "https://py-cat2cat.readthedocs.io/en/latest/"
+repository = "https://github.com/Polkas/py-cat2cat"
+changelog = "https://raw.githubusercontent.com/Polkas/py-cat2cat/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

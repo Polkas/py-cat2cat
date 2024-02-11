@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.1.5
+## v0.1.6 (11/02/2024)
 
 - New `cat2cat_ml_run` function to check the ml models performance before `cat2cat` with ml option is run. Now, the ml models are more transparent.
 - Improved the lack of support for NaN and None in the `get_mappings`.
