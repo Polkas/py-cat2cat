@@ -161,7 +161,7 @@ def _resolve_frequencies(
     if "wei_freq_c2c" in base_df.columns:
         freqs = (
             base_df.groupby(cat_var_base)
-            .apply(lambda x: sum(x["wei_freq_c2c"] * x.get(multiplier_var, 1)))
+            .apply(lambda x: sum(x["wei_freq_c2c"] * x.get(multiplier_var, 1)), include_groups=False)
             .to_dict()
         )
     else:

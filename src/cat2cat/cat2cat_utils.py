@@ -60,7 +60,7 @@ def prune_c2c(
     df2 = df if inplace else df.copy()
     final_rows = (
         df2.groupby(index_var, sort=False)
-        .apply(lambda x: prune_fun(x[wei_var].values))
+        .apply(lambda x: prune_fun(x[wei_var].values), include_groups=False)
         .values
     )
     df2 = df2.loc[concatenate(final_rows)]
