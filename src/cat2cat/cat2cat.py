@@ -1,4 +1,5 @@
 from pandas import DataFrame, concat
+import pandas as pd
 from numpy import arange, repeat, setdiff1d, isin, intersect1d
 
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
@@ -7,6 +8,9 @@ from cat2cat.cat2cat_utils import dummy_c2c
 from cat2cat.cat2cat_ml import _cat2cat_ml
 
 from typing import Optional, Any, Dict
+
+# include_groups parameter added in pandas 2.2.0
+_PANDAS_HAS_INCLUDE_GROUPS = tuple(int(x) for x in pd.__version__.split('.')[:2]) >= (2, 2)
 
 __all__ = ["cat2cat"]
 
@@ -159,11 +163,11 @@ def _resolve_frequencies(
     """Resolve the frequencies"""
     freqs: Dict[Any, int]
     if "wei_freq_c2c" in base_df.columns:
-        freqs = (
-            base_df.groupby(cat_var_base)
-            .apply(lambda x: sum(x["wei_freq_c2c"] * x.get(multiplier_var, 1)), include_groups=False)
-            .to_dict()
-        )
+        grouped = base_df.groupby(cat_var_base)
+        if _PANDAS_HAS_INCLUDE_GROUPS:
+            freqs = grouped.apply(lambda x: sum(x["wei_freq_c2c"] * x.get(multiplier_var, 1)), include_groups=False).to_dict()
+        else:
+            freqs = grouped.apply(lambda x: sum(x["wei_freq_c2c"] * x.get(multiplier_var, 1))).to_dict()
     else:
         freqs = get_freqs(
             base_df[cat_var_base].values, base_df.get(multiplier_var, None)

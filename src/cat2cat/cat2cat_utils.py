@@ -1,6 +1,10 @@
 from pandas import DataFrame
+import pandas as pd
 from numpy import arange, concatenate, ndarray
 from typing import Optional, Callable, Sequence
+
+# include_groups parameter added in pandas 2.2.0
+_PANDAS_HAS_INCLUDE_GROUPS = tuple(int(x) for x in pd.__version__.split('.')[:2]) >= (2, 2)
 
 __all__ = ["prune_c2c", "dummy_c2c"]
 
@@ -58,11 +62,11 @@ def prune_c2c(
     assert isinstance(inplace, bool), "inplace argument has to be a bool"
 
     df2 = df if inplace else df.copy()
-    final_rows = (
-        df2.groupby(index_var, sort=False)
-        .apply(lambda x: prune_fun(x[wei_var].values), include_groups=False)
-        .values
-    )
+    grouped = df2.groupby(index_var, sort=False)
+    if _PANDAS_HAS_INCLUDE_GROUPS:
+        final_rows = grouped.apply(lambda x: prune_fun(x[wei_var].values), include_groups=False).values
+    else:
+        final_rows = grouped.apply(lambda x: prune_fun(x[wei_var].values)).values
     df2 = df2.loc[concatenate(final_rows)]
     # reweight
     df2[wei_var] = (
