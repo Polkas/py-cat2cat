@@ -1,5 +1,5 @@
 from pandas import DataFrame, concat
-from numpy import arange, repeat, setdiff1d, in1d, intersect1d
+from numpy import arange, repeat, setdiff1d, isin, intersect1d
 
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml

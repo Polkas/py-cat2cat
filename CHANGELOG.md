@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.6.9000 ()
+
+- Support python 3.12 and 3.13.
+
 ## v0.1.6 (11/02/2024)
 
 - New `cat2cat_ml_run` function to check the ml models performance before `cat2cat` with ml option is run. Now, the ml models are more transparent.

@@ -1,9 +1,51 @@
 from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 from cat2cat.datasets import load_trans, load_occup
-from numpy import array, concatenate, NaN
+from numpy import array, concatenate, nan
 from numpy.random import choice, seed
 from pandas import concat, DataFrame
 import pytest
+import numpy as np
+
+
+def to_python_types(obj):
+    """Convert numpy types to native Python types for comparison."""
+    if isinstance(obj, dict):
+        return {to_python_types(k): to_python_types(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [to_python_types(item) for item in obj]
+    elif isinstance(obj, (np.integer, np.floating)):
+        return obj.item()
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return obj
+
+
+def compare_with_nan(a, b):
+    """Compare two objects that may contain NaN values."""
+    if isinstance(a, float) and isinstance(b, float) and np.isnan(a) and np.isnan(b):
+        return True
+    elif isinstance(a, dict) and isinstance(b, dict):
+        if len(a) != len(b):
+            return False
+        for k in a:
+            # Find matching key in b (accounting for NaN)
+            found = False
+            for kb in b:
+                if compare_with_nan(k, kb):
+                    if not compare_with_nan(a[k], b[kb]):
+                        return False
+                    found = True
+                    break
+            if not found:
+                return False
+        return True
+    elif isinstance(a, list) and isinstance(b, list):
+        if len(a) != len(b):
+            return False
+        return all(compare_with_nan(ai, bi) for ai, bi in zip(a, b))
+    else:
+        return a == b
 
 occup = load_occup()
 trans = load_trans()
@@ -37,28 +79,28 @@ trans_small = [
 def test_get_freqs_range():
     actual = get_freqs(list(range(10)))
     expected = {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1}
-    assert str(actual) == str(expected)
+    assert to_python_types(actual) == expected
 
 
 def test_get_freqs_random_array():
     seed(1234)
     actual = get_freqs(choice(5, 100, replace=True))
     expected = {0: 14, 1: 25, 2: 21, 3: 17, 4: 23}
-    assert str(actual) == str(expected)
+    assert to_python_types(actual) == expected
 
 
 def test_get_freqs_random_list():
     seed(1234)
     actual = get_freqs(list(choice(5, 100, replace=True)))
     expected = {0: 14, 1: 25, 2: 21, 3: 17, 4: 23}
-    assert str(actual) == str(expected)
+    assert to_python_types(actual) == expected
 
 
 def test_get_freqs_multiplier():
     seed(1234)
     actual = get_freqs(choice(5, 100, replace=True), choice(5, 100, replace=True))
     expected = {0: 25, 1: 60, 2: 40, 3: 27, 4: 43}
-    assert str(actual) == str(expected)
+    assert to_python_types(actual) == expected
 
 
 def test_get_freqs_multiplier_len():
@@ -106,7 +148,7 @@ def test_get_mappings_array():
             1212: [112001, 112002, 112006, 112008, 112013, 112090],
         },
     }
-    assert str(actual) == str(expected)
+    assert to_python_types(actual) == expected
 
 
 def test_get_mappings_DataFrame():
@@ -213,11 +255,11 @@ def test_get_mappings_nan_str():
 # test with NaNs
 def test_get_mappings_nan_float():
     trans2 = trans_small.copy()
-    trans2 = concatenate([trans2, [[NaN, 111101], [1111, NaN]]])
+    trans2 = concatenate([trans2, [[nan, 111101], [1111, nan]]])
     actual = get_mappings(trans2)
     expected = {
         "to_old": {
-            111101.0: [1111.0, NaN],
+            111101.0: [1111.0, nan],
             111102.0: [1111.0],
             111103.0: [1111.0],
             111201.0: [1112.0],
@@ -238,20 +280,22 @@ def test_get_mappings_nan_float():
             112006.0: [1212.0],
             112008.0: [1212.0],
             112090.0: [1212.0],
-            NaN: [1111.0],
+            nan: [1111.0],
         },
         "to_new": {
-            1111.0: [111101.0, 111102.0, 111103.0, NaN],
+            1111.0: [111101.0, 111102.0, 111103.0, nan],
             1112.0: [111201.0, 111202.0, 111301.0],
             1121.0: [111402.0],
             1122.0: [111401.0, 111403.0, 111404.0],
             1123.0: [111405.0],
             1211.0: [112007.0, 112016.0, 112017.0, 112019.0],
             1212.0: [112001.0, 112002.0, 112006.0, 112008.0, 112013.0, 112090.0],
-            NaN: [111101.0],
+            nan: [111101.0],
         },
     }
-    assert str(actual) == str(expected)
+    # Use special comparison function that handles NaN properly
+    actual_converted = to_python_types(actual)
+    assert compare_with_nan(actual_converted, expected)
 
 
 def test_get_mappings_different_types():
@@ -270,4 +314,4 @@ def test_cat_apply_freq():
         get_freqs(occup.code[occup.year == 2010].map(str).to_list()),
     )["3417"]
     expected = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    assert str(actual) == str(expected)
+    assert to_python_types(actual) == expected
