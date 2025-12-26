@@ -1,8 +1,8 @@
 # Changelog
 
-## v0.1.6.9000 ()
+## v0.1.7 (26/12/2025)
 
-- Support python 3.12 and 3.13.
+- Support higher python versions; 3.12 and 3.13.
 
 ## v0.1.6 (11/02/2024)
 
