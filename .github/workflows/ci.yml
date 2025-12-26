@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: ["3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     # Set up operating system
     runs-on: ${{ matrix.os }}
 
@@ -35,6 +35,7 @@ jobs:
         run: mypy src
         
       - name: Upload coverage to Codecov
+        if: matrix.python == '3.12'
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -47,4 +48,5 @@ jobs:
           verbose: true
 
       - name: Build documentation
+        if: matrix.python == '3.12'
         run: make html --directory docs/

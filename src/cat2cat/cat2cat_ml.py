@@ -1,5 +1,5 @@
 from pandas import DataFrame, concat
-from numpy import repeat, setdiff1d, in1d, sum, NaN, nanmean, isnan, round
+from numpy import repeat, setdiff1d, isin, sum, nan, nanmean, isnan, round
 from numpy.ma import masked_invalid
 
 from sklearn.model_selection import train_test_split
@@ -49,18 +49,18 @@ class cat2cat_ml_run_results:
 
         mean_acc["naive"] = round(
             nanmean(
-                [self.res.get(g, {"naive": NaN}).get("naive") for g in self.res.keys()]
+                [self.res.get(g, {"naive": nan}).get("naive") for g in self.res.keys()]
             ),
             3,
         )
         mean_acc["most_freq"] = round(
             nanmean(
-                [self.res.get(g, {"freq": NaN}).get("freq") for g in self.res.keys()]
+                [self.res.get(g, {"freq": nan}).get("freq") for g in self.res.keys()]
             ),
             2,
         )
         for m in self.models_names:
-            vals = [self.res.get(g, {}).get(m, NaN) for g in self.res.keys()]
+            vals = [self.res.get(g, {}).get(m, nan) for g in self.res.keys()]
             mean_acc[m] = round(nanmean(vals), 3)
             percent_failed[m] = round(sum(isnan(vals)) / len(vals) * 100, 3)
             percent_better_most[m] = round(
@@ -171,7 +171,7 @@ def cat2cat_ml_run(
     cat_var = ml.data[ml.cat_var].values
     cat_var_vals = mappings.trans[base_name].unique()
 
-    assert (sum(in1d(cat_var, cat_var_vals)) / len(cat_var)) > kwargs.get(
+    assert (sum(isin(cat_var, cat_var_vals)) / len(cat_var)) > kwargs.get(
         "min_match", 0.8
     ), "The mapping table does not cover all categories in the data. Please check the direction in the mapping table."
 
@@ -188,11 +188,11 @@ def cat2cat_ml_run(
         try:
             matched_cat = mapp.get(cat, [])
             res[cat] = {
-                "naive": NaN,
-                "freq": NaN,
+                "naive": nan,
+                "freq": nan,
             }
             for m in models_names:
-                res[cat][m] = NaN
+                res[cat][m] = nan
 
             data_small_g_list = list()
             for g in matched_cat:
@@ -208,7 +208,7 @@ def cat2cat_ml_run(
             if (
                 (data_small_g.shape[0] < 10)
                 or (len(matched_cat) < 2)
-                or (sum(in1d(matched_cat, data_small_g[ml.cat_var])) == 1)
+                or (sum(isin(matched_cat, data_small_g[ml.cat_var])) == 1)
             ):
                 continue
 
@@ -223,7 +223,7 @@ def cat2cat_ml_run(
 
             gcounts = y_train.value_counts()
             gfreq_max = gcounts.index[0]
-            res[cat]["freq"] = nanmean(gfreq_max == y_test)
+            res[cat]["freq"] = float(nanmean(gfreq_max == y_test))
 
             if (X_test.shape[0] == 0) or (X_train.shape[0] < 5):
                 continue
@@ -245,11 +245,11 @@ def _cat2cat_ml(
         base_cats = mapp[target_cat]
         ml_cat_var = ml.data[ml.cat_var]
 
-        if (not any(in1d(base_cats, ml_cat_var.unique()))) or (len(base_cats) == 1):
+        if (not any(isin(base_cats, ml_cat_var.unique()))) or (len(base_cats) == 1):
             continue
 
-        target_cat_index = in1d(target_df[cat_var_target].values, target_cat)
-        ml_cat_index = in1d(ml.data[ml.cat_var].values, base_cats)
+        target_cat_index = isin(target_df[cat_var_target].values, target_cat)
+        ml_cat_index = isin(ml.data[ml.cat_var].values, base_cats)
 
         data_ml_train = ml.data.loc[ml_cat_index, :]
         data_ml_target = target_df.loc[target_cat_index, :]
