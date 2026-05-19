@@ -2,14 +2,13 @@
 
 ## About
 
-Unifying an inconsistent coded categorical variable in a panel/longtitudal dataset
+Unifying an inconsistently coded categorical variable in a panel/longitudinal dataset
 
-There is offered the cat2cat procedure to map a categorical variable according to a mapping (transition) table between two different time points. The mapping (transition) table should to have a candidate for each category from the targeted for an update period. The main rule is to replicate the observation if it could be assigned to a few categories, then using simple frequencies or statistical methods to approximate probabilities of being assigned to each of them.
+The cat2cat procedure maps a categorical variable according to a mapping (transition) table between two different time points. The mapping (transition) table should have a candidate for each category in the period being harmonized. The main rule is to replicate an observation if it can be assigned to several categories, then use frequencies or statistical methods to approximate probabilities of assignment.
 
 **This algorithm was invented and implemented in the paper by [(Nasinski, Majchrowska and Broniatowska (2020))](https://doi.org/10.24425/cejeme.2020.134747).**
 
 **For more details please read the paper by [(Nasinski, Gajowniczek (2023))](https://doi.org/10.1016/j.softx.2023.101525).**
-
 
 ## Graph - cat2cat procedure
 
@@ -18,7 +17,6 @@ The graphs present how the `cat2cat` function (and the underlying procedure) wor
 ![Backward Mapping](https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/back_nom.png)
 
 ![Forward Mapping](https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/for_nom.png)
-
 
 ## Example usage
 
@@ -45,7 +43,7 @@ from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 
 # convert the mapping table to two association lists
 mappings = get_mappings(trans)
-# get a variable levels freqencies
+# get variable-level frequencies
 codes_new = occup.code[occup.year == 2010].values
 freqs = get_freqs(codes_new)
 # apply the frequencies to the (one) association list
@@ -65,7 +63,7 @@ from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
 
 from pandas import concat
 
-# split the panel by the time variale
+# split the panel by the time variable
 # here only two periods
 o_old = occup.loc[occup.year == 2008, :].copy()
 o_new = occup.loc[occup.year == 2010, :].copy()
@@ -92,17 +90,23 @@ data_final.groupby(["year"]).sample(5).loc[:, sub_cols]
 ### With ML
 
 ```python
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from cat2cat import cat2cat_ml_run
+
+o_new["edu_group"] = o_new["edu"].astype(str)
+o_old["edu_group"] = o_old["edu"].astype(str)
 
 # ml dataclass, one of the arguments for the cat2cat function
 ml = cat2cat_ml(
     data = o_new, 
     cat_var = "code", 
-    features = ["salary", "age", "edu"], 
-    models = [KNeighborsClassifier(random_state = 1234)]
+    features = ["salary", "age", "edu_group"], 
+    models = [RandomForestClassifier(n_estimators = 50, random_state = 1234)],
+    on_fail = "freq",
+    fail_warn = True
 )
 
+# Reports accuracy, Brier score, and mean P(true class).
 cat2cat_ml_run(mappings, ml)
 
 # apply the cat2cat procedure
@@ -110,16 +114,20 @@ c2c = cat2cat(data = data, mappings = mappings, ml = ml)
 # pandas.concat used to bind per period datasets
 data_final = concat([c2c["old"], c2c["new"]])
 
-sub_cols = ["id", "year", "wei_naive_c2c", "wei_freq_c2c", "wei_KNeighborsClassifier_c2c"]
+sub_cols = ["id", "year", "wei_naive_c2c", "wei_freq_c2c", "wei_RandomForestClassifier_c2c"]
 data_final.groupby(["year"]).sample(3).loc[:, sub_cols]
 ```
+
+Categorical/object/string features such as `edu_group` are one-hot encoded with
+levels from both the ML data and the target period. Failed ML probabilities are
+handled according to `on_fail`: `"freq"`, `"naive"`, `"na"`, or `"error"`.
 
 With 4 periods, one mapping table and backward direction:
 
 ```python
 from cat2cat.cat2cat_utils import dummy_c2c
 
-# split the panel by the time variale
+# split the panel by the time variable
 # here four periods
 o_2006 = occup.loc[occup.year == 2006, :].copy()
 o_2008 = occup.loc[occup.year == 2008, :].copy()
@@ -167,9 +175,8 @@ data_final.groupby(["year"]).sample(2).loc[:, sub_cols]
 
 ### Prune - prune_c2c
 
-
 Pruning which could be useful after the mapping process, the custom prune_fun is provided by the end user.
-The prune_fun is a function to process a 1D-array of weights (float) and return a 1D-array of boolean of the same length. The weighs will be reweighted automatically to still to sum to one per each original observation.
+The prune_fun is a function that processes a 1D array of weights (float) and returns a 1D boolean array of the same length. The weights are reweighted automatically to still sum to one for each original observation.
 
 - non-zero - lambda x: x > 0
 - highest1 - lambda x: arange(len(x)) == argmax(x)
@@ -180,13 +187,12 @@ from cat2cat.cat2cat_utils import prune_c2c
 from numpy import arange, argmax
 
 # prune_c2c
-# highest1 leave only one observation with the highest probability for each orginal one
+# highest1 leaves only one observation with the highest probability for each original one
 (o_2006_n.shape[0], 
  prune_c2c(o_2006_n, lambda x: arange(len(x)) == argmax(x)).shape[0])
 ```
 
 ### Direct match
-
 
 It is important to set the `id_var` argument as then we merging categories 1 to 1
 for this identifier which exists in both periods.
@@ -228,21 +234,21 @@ data_final = concat([verts["old"], verts["new"]])
 
 ```python
 # ml dataclass, one of the arguments for the cat2cat function
+from sklearn.neighbors import KNeighborsClassifier
 ml = cat2cat_ml(
     data = vert_old, 
     cat_var = "vertical", 
     features = ["sales"], 
     models = [KNeighborsClassifier()]
 )
-
 # apply the cat2cat procedure
 verts_ml = cat2cat(
   data = data,
   mappings = mappings,
   ml = ml
 )
-
 # pandas.concat used to bind per period datasets
 data_final = concat([verts_ml["old"], verts_ml["new"]])
 ```
+<!-- end -->
 

@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.4.4 (19/5/2026)
+
+This release incorporates feedback from the PhD dissertation reviewers: dr hab. Andrzej Dudek, dr hab. Joanna Landmesser-Rusek, and dr hab. Paweł Andrzej Strzelecki.
+
+### Added
+
+- Added Brier score and mean P(true class) diagnostics to `cat2cat_ml_run()` results and repr output.
+- Added support for categorical/object/string ML features by one-hot encoding levels observed in `ml.data` and the target period.
+- Added configurable ML failure handling to `cat2cat_ml` with `on_fail={"freq", "naive", "na", "error"}` and `fail_warn`.
+- Added the `occup_panel` packaged dataset and `load_occup_panel()`.
+- Added `summary_c2c()` for statsmodels-like result objects, including corrected standard errors, corrected statistics, corrected p-values, and reference distribution labels.
+- Added docs pages for Get Started, Choosing Weights And Validating ML, and Advanced Workflows.
+
+### Changed
+
+- Fixed `cat2cat_ml_run()` so `test_prop` controls the scikit-learn train/test split as documented.
+- Kept the Python ML API estimator-based: users pass compatible scikit-learn classifiers with `predict_proba()`.
+- Updated README and example docs for scikit-learn estimators, categorical features, ML fallback policy, and the new probability diagnostics.
+- Improved `get_freqs()` counting to preserve missing-value categories with pandas `value_counts(dropna=False)`.
+- Replaced assertion-based runtime validation in public/core paths with explicit `TypeError`/`ValueError` exceptions for library-safe API behavior.
+
+### Optional Dependencies
+
+- Added the `summary` extra for statsmodels-based regression workflows.
+
 ## v0.1.7 (26/12/2025)
 
 - Support higher python versions; 3.12 and 3.13.

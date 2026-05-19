@@ -22,27 +22,27 @@ def test_cat2cat_data():
 
     assert isinstance(data, cat2cat_data)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         # only one period in each
         cat2cat_data(concat([o_2006, o_2008]), o_new, "code", "code", "year")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         # only one period in each
         cat2cat_data(o_old, concat([o_2010, o_2012]), "code", "code", "year")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         cat2cat_data(o_old, o_new, "WRONG", "code", "year")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         cat2cat_data(o_old, o_new, "code", "WRONG", "year")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         cat2cat_data(o_old, o_new, "code", "code", "WRONG")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         cat2cat_data(1, o_new, "code", "code", "year")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         cat2cat_data(o_old, 1, "code", "code", "year")
 
     with pytest.raises(FrozenInstanceError):
@@ -55,13 +55,13 @@ def test_cat2cat_mappings():
 
     assert isinstance(mappings, cat2cat_mappings)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         cat2cat_mappings(1, "backward")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         cat2cat_mappings(trans, "backward", 3)
     
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         cat2cat_mappings(1, "WRONG")
 
     with pytest.raises(FrozenInstanceError):
@@ -78,16 +78,16 @@ def test_cat2cat_ml():
 
     assert isinstance(ml, cat2cat_ml)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         cat2cat_ml(o_new, "code", ["salary", "age"], [])
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         cat2cat_ml(o_new, "code", ["WRONG", "age"], [RandomForestClassifier()])
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         cat2cat_ml(o_new, "WRONG", ["salary", "age"], [RandomForestClassifier()])
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         cat2cat_ml(1, "WRONG", ["salary", "age"], [RandomForestClassifier()])
 
     with pytest.raises(FrozenInstanceError):

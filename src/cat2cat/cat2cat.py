@@ -62,13 +62,12 @@ def cat2cat(
     {...
 
     """
-    assert isinstance(data, cat2cat_data), "data arg has to be cat2cat_data instance"
-    assert isinstance(
-        mappings, cat2cat_mappings
-    ), "mappings arg has to be cat2cat_mappings instance"
-    assert (ml is None) or isinstance(
-        ml, cat2cat_ml
-    ), "ml arg has to be cat2cat_ml instance"
+    if not isinstance(data, cat2cat_data):
+        raise TypeError("data arg has to be cat2cat_data instance")
+    if not isinstance(mappings, cat2cat_mappings):
+        raise TypeError("mappings arg has to be cat2cat_mappings instance")
+    if ml is not None and not isinstance(ml, cat2cat_ml):
+        raise TypeError("ml arg has to be cat2cat_ml instance")
 
     mapps = get_mappings(mappings.trans)
 

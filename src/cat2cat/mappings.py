@@ -1,4 +1,4 @@
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from numpy import ndarray, unique, repeat, array, round, unique, sort, isnan
 
 from collections.abc import Iterable
@@ -40,9 +40,12 @@ def get_mappings(x: Table) -> Dict[str, Dict[Any, List[Any]]]:
     >>> mappings["to_new"]
     {1111.0: [111101.0, 111102.0], 1123.0: [111405.0], 1212.0: [112006.0, 112008.0, 112090.0, nan], nan: [111405.0]}
     """
-    assert hasattr(x, "shape") and ((len(x.shape) == 2) and (
-        x.shape[1] == 2
-    )), "x should have 2 dimensions and the second one is equal to 2 (columns)"
+    if not hasattr(x, "shape"):
+        raise TypeError("get_mappings input has to be ndarray or DataFrame")
+    if not ((len(x.shape) == 2) and (x.shape[1] == 2)):
+        raise ValueError(
+            "x should have 2 dimensions and the second one is equal to 2 (columns)"
+        )
 
     if isinstance(x, DataFrame):
         return get_mappings_df(x)
@@ -55,7 +58,8 @@ def get_mappings_array(x: ndarray) -> Dict[str, Dict[Any, List[Any]]]:
     ff = x[:, 0].copy()
     ss = x[:, 1].copy()
 
-    assert ff.dtype == ss.dtype
+    if ff.dtype != ss.dtype:
+        raise ValueError("mapping table columns must share the same dtype")
     col_type = ff.dtype
 
     from_old = list(OrderedDict.fromkeys(ff))
@@ -84,14 +88,15 @@ def get_mappings_array(x: ndarray) -> Dict[str, Dict[Any, List[Any]]]:
     return dict(to_old=to_old, to_new=to_new)
 
 def get_mappings_df(x: DataFrame) -> Dict[str, Dict[Any, List[Any]]]:
-    ff = x.iloc[:, 0].copy()
-    which_ff_null = ff.isnull()
-    ff = ff.values
-    ss = x.iloc[:, 1].copy()
-    which_ss_null = ss.isnull()
-    ss = ss.values
+    # Use writable numpy buffers. On newer pandas/numpy/python combinations,
+    # values extracted from a Series can be read-only and fail on assignment.
+    ff = x.iloc[:, 0].to_numpy(copy=True)
+    ss = x.iloc[:, 1].to_numpy(copy=True)
+    which_ff_null = Series(ff).isnull().to_numpy()
+    which_ss_null = Series(ss).isnull().to_numpy()
 
-    assert ff.dtype == ss.dtype
+    if ff.dtype != ss.dtype:
+        raise ValueError("mapping table columns must share the same dtype")
     col_type = ff.dtype
 
     if col_type == "O":
@@ -140,17 +145,17 @@ def get_freqs(
     >>> get_freqs([1,1,1,2,1,2,2,11])
     {1: 4, 2: 3, 11: 1}
     """
-    assert isinstance(x, Iterable), "x has to be at least a Iterable"
-    assert (multiplier is None) or isinstance(
-        multiplier, Iterable
-    ), "multiplier has to be a Iterable"
+    if not isinstance(x, Iterable):
+        raise TypeError("x has to be at least a Iterable")
+    if multiplier is not None and not isinstance(multiplier, Iterable):
+        raise TypeError("multiplier has to be a Iterable")
     input: ndarray
     if multiplier is not None:
         input = repeat(x, multiplier)
     else:
-        input = array(x)
-    input_unique: tuple = unique(input, return_counts=True)
-    res: dict = dict(zip(*input_unique))
+        input = array(list(x), dtype=object)
+    counts = Series(input, dtype=object).value_counts(dropna=False, sort=False)
+    res: dict = counts.astype(int).to_dict()
     return res
 
 
@@ -182,8 +187,10 @@ def cat_apply_freq(
     >>> mapp_new_p['3481']
     [0.0, 0.6, 0.0, 0.4]
     """
-    assert isinstance(to_x, dict), "to_x has to be a dict"
-    assert isinstance(freqs, dict), "freqs has to be dict"
+    if not isinstance(to_x, dict):
+        raise TypeError("to_x has to be a dict")
+    if not isinstance(freqs, dict):
+        raise TypeError("freqs has to be dict")
     res = dict()
     for x in to_x:
         cs = [freqs.get(e, 1e-12) for e in to_x[x]]
