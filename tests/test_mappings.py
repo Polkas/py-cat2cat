@@ -2,7 +2,7 @@ from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
 from cat2cat.datasets import load_trans, load_occup
 from numpy import array, concatenate, nan
 from numpy.random import choice, seed
-from pandas import concat, DataFrame
+from pandas import concat, DataFrame, NA, Series
 import pytest
 import numpy as np
 
@@ -109,6 +109,30 @@ def test_get_freqs_multiplier_len():
         get_freqs(choice(5, 100, replace=True), choice(5, 90, replace=True))
 
 
+def test_get_freqs_with_none_and_nan():
+    actual = get_freqs(["a", None, "a", nan, None])
+
+    assert actual["a"] == 2
+    assert actual[None] == 2
+    nan_keys = [key for key in actual if isinstance(key, float) and np.isnan(key)]
+    assert len(nan_keys) == 1
+    assert actual[nan_keys[0]] == 1
+
+
+def test_get_freqs_with_pandas_nullable_values():
+    actual = get_freqs(Series(["a", NA, "b", NA], dtype="string"))
+
+    assert actual["a"] == 1
+    assert actual["b"] == 1
+    assert actual[NA] == 2
+
+
+def test_get_freqs_missing_values_with_multiplier():
+    actual = get_freqs(["a", None, "b"], [2, 3, 1])
+
+    assert actual == {"a": 2, None: 3, "b": 1}
+
+
 # get_mappings
 
 
@@ -167,7 +191,7 @@ def test_get_mappings_DataFrame():
 
 @pytest.mark.parametrize("x", [1, "", [], {}])
 def test_get_mappings_wrong(x):
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         get_mappings(x)
 
 
@@ -301,7 +325,7 @@ def test_get_mappings_nan_float():
 def test_get_mappings_different_types():
     trans2 = trans.copy()
     trans2["old"] = trans2["old"].astype(float)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         get_mappings(trans2)
 
 

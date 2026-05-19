@@ -7,11 +7,11 @@ name = "cat2cat"
 authors = [
   {name = "Maciej Nasinski", email = "nasinski.maciej@gmail.com"},
 ]
-description = "Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset."
+description = "Unifying an inconsistently coded categorical variable in a panel/longitudinal dataset."
 readme = "README.md"
-version = "0.1.7"
+version = "0.4.4"
 requires-python = ">=3.8"
-keywords = ["panel", "categorical", "longtitudal", "inconsistent", "cat2cat"]
+keywords = ["panel", "categorical", "longitudinal", "inconsistent", "cat2cat"]
 license = {text = "Apache License 2.0 | file LICENSE"}
 classifiers = [
 "Development Status :: 3 - Alpha",
@@ -40,10 +40,11 @@ docs = [
   "sphinx-autoapi", 
   "sphinx-rtd-theme"
 ]
+summary = ["statsmodels", "scipy"]
 build = ["build"]
 benchmark = ["snakeviz"]
 styler = ["flake8", "black"]
-all = ["cat2cat[test,docs,build,benchmark,styler]"]
+all = ["cat2cat[test,docs,summary,build,benchmark,styler]"]
 
 [project.urls]
 homepage = "https://github.com/Polkas/py-cat2cat"

@@ -1,108 +1,156 @@
-# cat2cat 
+# cat2cat
 
-<a href='https://github.com/polkas/py-cat2cat'>
-<img src='https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/cat2cat_logo.png'  style="display:block;margin-left:auto;margin-right:auto;width:200px;" width="200px" alt="cat2cat logo"/>
-</a>
+[![cat2cat logo](https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/cat2cat_logo.png)](https://github.com/polkas/py-cat2cat)
 
-<hr>
+[![Python build status](https://github.com/polkas/py-cat2cat/workflows/ci/badge.svg)](https://github.com/polkas/py-cat2cat/actions)
+[![PyPI](https://img.shields.io/pypi/v/cat2cat.svg)](https://pypi.org/project/cat2cat/)
+[![codecov](https://codecov.io/gh/Polkas/py-cat2cat/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Polkas/py-cat2cat)
 
-<div>
-<a href="https://github.com/polkas/py-cat2cat/actions">
-<img src="https://github.com/polkas/py-cat2cat/workflows/ci/badge.svg" alt="Build Status">
-</a>
-<a href="https://codecov.io/gh/Polkas/py-cat2cat">
-<img src="https://codecov.io/gh/Polkas/py-cat2cat/branch/main/graph/badge.svg" alt="codecov">
-</a>
-<a href="https://pypi.org/project/cat2cat/">
-<img src="https://img.shields.io/pypi/v/cat2cat.svg" alt="pypi">
-</a>
-<div>
+## Handling an Inconsistent Coded Categorical Variable in a Longitudinal Dataset
 
-<br>
+**cat2cat** provides a statistical solution for harmonising categorical variables whose encoding changes between survey waves or data releases.
+If you work with longitudinal data where classification schemes evolve (occupations, diseases, industries, products, or fields of education), this package helps produce valid cross-temporal analyses.
 
-### Unifying an inconsistently coded categorical variable in a panel/longtitudal dataset
+### The Problem
 
-There is offered the cat2cat procedure to map a categorical variable according to a mapping (transition) table between two different time points. The mapping (transition) table should to have a candidate for each category from the targeted for an update period. The main rule is to replicate the observation if it could be assigned to a few categories, then using simple frequencies or statistical methods to approximate probabilities of being assigned to each of them.
+Real-world classifications change.
+When one classification replaces another, a single old code may map to multiple new codes (and vice versa).
+Naive responses are unsatisfactory: separate analyses by period limit comparability, manual recoding is hard to reproduce, and ignoring coding changes can bias results.
 
-**This algorithm was invented and implemented in the paper by [(Nasinski, Majchrowska and Broniatowska (2020))](https://doi.org/10.24425/cejeme.2020.134747).**
+### The Solution
 
-**For more details please read the paper by [(Nasinski, Gajowniczek (2023))](https://doi.org/10.1016/j.softx.2023.101525).**
+**cat2cat** maps a categorical variable using a transition table between two time points.
+The transition table should list candidate categories for each code in the period being harmonised.
+When one observed code corresponds to several target categories, **cat2cat** replicates the observation across candidates and assigns probability weights using frequencies or ML-based predictions.
+
+The method follows a replication-and-weighting procedure that:
+
+1. Replicates each observation onto all candidate categories from the mapping table for a chosen direction.
+2. Assigns probability weights that sum to 1 per original observation.
+3. Preserves distributional properties of non-mapped variables for valid downstream analysis.
+
+NOTE: If you have a fully linked panel where each subject appears in both periods and target-period categories are directly available, probabilistic harmonisation may be unnecessary. `cat2cat()` is most useful when direct linking is incomplete (for example repeated cross-sections, rotational panels, entrants/leavers).
+
+### Value Added of cat2cat
+
+cat2cat separates true structural change from coding-system change.
+
+After harmonisation, you can:
+
+- Track trends within groups across waves.
+- Compare subgroup dynamics on one consistent coding scheme.
+- Estimate models with group effects/interactions.
+- Run sensitivity checks across weighting assumptions.
+
+### Direction
+
+You can harmonise in both directions:
+
+#### Forward Mapping (Old -> New)
+
+![Forward mapping](https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/for_nom.png)
+
+#### Backward Mapping (New -> Old)
+
+![Backward mapping](https://raw.githubusercontent.com/Polkas/cat2cat/master/man/figures/back_nom.png)
+
+### Key Features
+
+| Feature | Benefit |
+| ------- | ------- |
+| Probability weights | Naive, frequency, and ML-based weights |
+| ML validation | `cat2cat_ml_run()` reports accuracy, Brier, and mean P(true class) |
+| Multi-period chaining | Harmonise 3+ waves iteratively |
+| Regression support | `summary_c2c()` adjusts inference for replicated-data workflows |
+| Aggregated workflows | Harmonisation tools for grouped data use-cases |
+
+### References
+
+- **Method**: [Nasinski, Majchrowska & Broniatowska (2020)](https://doi.org/10.24425/cejeme.2020.134747)
+- **Software**: [Nasinski & Gajowniczek (2023)](https://doi.org/10.1016/j.softx.2023.101525)
+
+### Ecosystem
+
+| | |
+| --- | --- |
+| [**R Package**](https://cran.r-project.org/package=cat2cat) | CRAN, production-ready |
+| [**Python Package**](https://pypi.org/project/cat2cat/) | PyPI |
+| [**Documentation**](https://py-cat2cat.readthedocs.io/en/latest/) | API and guides |
+
+## Documentation
+
+- [Get Started](https://py-cat2cat.readthedocs.io/en/latest/get-started.html) - core concepts and a two-period workflow.
+- [Choosing Weights and Validating ML](https://py-cat2cat.readthedocs.io/en/latest/choosing-weights-and-validating-ml.html) - weight strategy and ML validation.
+- [Advanced Workflows](https://py-cat2cat.readthedocs.io/en/latest/advanced-workflows.html) - multi-period and advanced usage patterns.
 
 ## Installation
 
 ```bash
-$ pip install cat2cat
+pip install cat2cat
 ```
 
-## Usage
-
-For more examples and descriptions please vist [**the example notebook**](https://py-cat2cat.readthedocs.io/en/latest/example.html)
-
-### load example data
+## Quick Start
 
 ```python
-# cat2cat datasets
-from cat2cat.datasets import load_trans, load_occup
-trans = load_trans()
-occup = load_occup()
-```
-
-### Low-level functions
-
-```python
-from cat2cat.mappings import get_mappings, get_freqs, cat_apply_freq
-
-# convert the mapping table to two association lists
-mappings = get_mappings(trans)
-# get a variable levels freqencies
-codes_new = occup.code[occup.year == 2010].values
-freqs = get_freqs(codes_new)
-# apply the frequencies to the (one) association list
-mapp_new_p = cat_apply_freq(mappings["to_new"], freqs)
-
-# mappings for a specific category
-mappings["to_new"]['3481']
-# probability mappings for a specific category
-mapp_new_p['3481']
-```
-
-### cat2cat function
-
-```python
-from cat2cat import cat2cat
-from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
-
 from pandas import concat
+from cat2cat import cat2cat, cat2cat_ml_run
+from cat2cat.dataclass import cat2cat_data, cat2cat_mappings, cat2cat_ml
+from cat2cat.datasets import load_occup, load_trans
+from sklearn.ensemble import RandomForestClassifier
 
-# split the panel by the time variale
-# here only two periods
-o_old = occup.loc[occup.year == 2008, :].copy()
-o_new = occup.loc[occup.year == 2010, :].copy()
+occup = load_occup()
+trans = load_trans()
 
-# dataclasses, core arguments for the cat2cat function
-data = cat2cat_data(
-    old = o_old, 
-    new = o_new,
-    cat_var_old = "code", 
-    cat_var_new = "code", 
-    time_var = "year"
+old = occup.loc[occup.year == 2008, :].copy()
+new = occup.loc[occup.year == 2010, :].copy()
+
+data = cat2cat_data(old=old, new=new, cat_var_old="code", cat_var_new="code", time_var="year")
+mappings = cat2cat_mappings(trans=trans, direction="backward")
+
+c2c = cat2cat(data=data, mappings=mappings)
+harmonised = concat([c2c["old"], c2c["new"]])
+
+new["edu_group"] = new["edu"].astype(str)
+old["edu_group"] = old["edu"].astype(str)
+ml = cat2cat_ml(
+    data=new,
+    cat_var="code",
+    features=["salary", "age", "edu_group"],
+    models=[RandomForestClassifier(n_estimators=50, random_state=1234)],
+    on_fail="freq",
+    fail_warn=True,
 )
-mappings = cat2cat_mappings(trans = trans, direction = "backward")
 
-# apply the cat2cat procedure
-c2c = cat2cat(data = data, mappings = mappings)
-# pandas.concat used to bind per period datasets
-data_final = concat([c2c["old"], c2c["new"]])
+diagnostics = cat2cat_ml_run(mappings=mappings, ml=ml)
+print(diagnostics)
+```
+
+## Citation
+
+If you use cat2cat in your research, please cite:
+
+```text
+Nasinski M, Gajowniczek K (2023). "cat2cat: Handling an Inconsistently Coded
+Categorical Variable in a Longitudinal Dataset." SoftwareX, 24, 101525.
+doi:10.1016/j.softx.2023.101525
+```
+
+```bibtex
+@article{nasinski2023cat2cat,
+  title={cat2cat: Handling an Inconsistently Coded Categorical Variable in a Longitudinal Dataset},
+  author={Nasinski, Maciej and Gajowniczek, Krzysztof},
+  journal={SoftwareX},
+  volume={24},
+  pages={101525},
+  year={2023},
+  doi={10.1016/j.softx.2023.101525}
+}
 ```
 
 ## Contributing
 
-Interested in contributing? Check out the contributing guidelines. Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
+Interested in contributing? Check the contributing guidelines and code of conduct.
 
 ## License
 
-`cat2cat` was created by Maciej Nasinski. It is licensed under the terms of the MIT license.
-
-## Credits
-
-`cat2cat` was created with [`cookiecutter`](https://cookiecutter.readthedocs.io/en/latest/) and the `py-pkgs-cookiecutter` [template](https://github.com/py-pkgs/py-pkgs-cookiecutter).
+`cat2cat` is licensed under Apache License 2.0. See [LICENSE](LICENSE).

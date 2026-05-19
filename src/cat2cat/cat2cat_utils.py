@@ -53,13 +53,20 @@ def prune_c2c(
               id        age    sex  edu        exp  ...  index_c2c  g_new_c2c  rep_c2c wei_naive_c2c  wei_freq_c2c
     ...
     """
-    assert isinstance(index_var, str), "index argument has to be a str"
-    assert isinstance(wei_var, str), "col argument has to be a str"
-    assert isinstance(df, DataFrame) and (
-        (index_var in df.columns) and (wei_var in df.columns)
-    ), "df argument has to be a DataFrame with the index and col args columns"
-    assert callable(prune_fun), "prune_fun argument has to be a callable"
-    assert isinstance(inplace, bool), "inplace argument has to be a bool"
+    if not isinstance(index_var, str):
+        raise TypeError("index argument has to be a str")
+    if not isinstance(wei_var, str):
+        raise TypeError("col argument has to be a str")
+    if not isinstance(df, DataFrame) or (
+        (index_var not in df.columns) or (wei_var not in df.columns)
+    ):
+        raise ValueError(
+            "df argument has to be a DataFrame with the index and col args columns"
+        )
+    if not callable(prune_fun):
+        raise TypeError("prune_fun argument has to be a callable")
+    if not isinstance(inplace, bool):
+        raise TypeError("inplace argument has to be a bool")
 
     df2 = df if inplace else df.copy()
     grouped = df2.groupby(index_var, sort=False)
@@ -100,14 +107,14 @@ def dummy_c2c(
         The base added columns if not already exist: index_c2c, g_new_c2c, rep_c2c, wei_naive_c2c, wei_freq_c2c.
         Additionaly ml models connected columns like wei_MLNAME_c2c.
     """
-    assert isinstance(cat_var, str), "cat_var argument has to be a str"
-    assert isinstance(df, DataFrame) and (
-        (cat_var in df.columns)
-    ), "df argument has to be a DataFrame with the cat_var column"
-    assert (models == None) or isinstance(
-        models, Sequence
-    ), "models has to be None or list-like of str (ml models names)"
-    assert isinstance(inplace, bool), "inplace argument has to be a bool"
+    if not isinstance(cat_var, str):
+        raise TypeError("cat_var argument has to be a str")
+    if not isinstance(df, DataFrame) or (cat_var not in df.columns):
+        raise ValueError("df argument has to be a DataFrame with the cat_var column")
+    if models is not None and not isinstance(models, Sequence):
+        raise TypeError("models has to be None or list-like of str (ml models names)")
+    if not isinstance(inplace, bool):
+        raise TypeError("inplace argument has to be a bool")
 
     df2 = df if inplace else df.copy()
     nrow_df = df2.shape[0]

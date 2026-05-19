@@ -1,7 +1,8 @@
+from dataclasses import dataclass
+from typing import Any, Dict, Optional, Sequence
+
 from pandas import DataFrame
 from sklearn.base import ClassifierMixin
-from dataclasses import dataclass
-from typing import Sequence, Dict, Any, Optional
 
 __all__ = ["cat2cat_data", "cat2cat_mappings", "cat2cat_ml"]
 
@@ -29,37 +30,44 @@ class cat2cat_data:
     multiplier_var: Optional[str] = None
 
     def __post_init__(self) -> None:
-        assert isinstance(self.old, DataFrame), "old has to be a pandas.DataFrame"
-        assert isinstance(self.new, DataFrame), "new has to be a pandas.DataFrame"
-        assert isinstance(self.cat_var_old, str) and (
-            self.cat_var_old in self.old.columns
-        ), "cat_var_old has to be a str and the old DataFrame column"
-        assert isinstance(self.cat_var_new, str) and (
-            self.cat_var_new in self.new.columns
-        ), "cat_var_new has to be a str and the new DataFrame column"
-        assert isinstance(self.time_var, str) and (
-            (self.time_var in self.new.columns) and (self.time_var in self.old.columns)
-        ), "time_var has to be a str and in the both (old and new) DataFrames"
-        assert (len(self.old[self.time_var].unique()) == 1) and (
-            len(self.new[self.time_var].unique()) == 1
-        ), "time_var has to have only the one period in each DataFrame (old and new)"
-        assert (
-            isinstance(self.id_var, str)
-            and (
-                (self.id_var in self.old.columns) and (self.id_var in self.new.columns)
+        if not isinstance(self.old, DataFrame):
+            raise TypeError("old has to be a pandas.DataFrame")
+        if not isinstance(self.new, DataFrame):
+            raise TypeError("new has to be a pandas.DataFrame")
+        if not isinstance(self.cat_var_old, str) or self.cat_var_old not in self.old.columns:
+            raise ValueError("cat_var_old has to be a str and the old DataFrame column")
+        if not isinstance(self.cat_var_new, str) or self.cat_var_new not in self.new.columns:
+            raise ValueError("cat_var_new has to be a str and the new DataFrame column")
+        if (
+            not isinstance(self.time_var, str)
+            or self.time_var not in self.old.columns
+            or self.time_var not in self.new.columns
+        ):
+            raise ValueError("time_var has to be a str and in the both (old and new) DataFrames")
+        if (len(self.old[self.time_var].unique()) != 1) or (
+            len(self.new[self.time_var].unique()) != 1
+        ):
+            raise ValueError(
+                "time_var has to have only the one period in each DataFrame (old and new)"
             )
-        ) or (
-            self.id_var is None
-        ), "id_var has to be a str and in the both (old and new) DataFrames, or None"
-        assert (
-            isinstance(self.multiplier_var, str)
-            and (
-                (self.multiplier_var in self.new.columns)
-                or (self.multiplier_var in self.old.columns)
+        if self.id_var is not None and (
+            not isinstance(self.id_var, str)
+            or self.id_var not in self.old.columns
+            or self.id_var not in self.new.columns
+        ):
+            raise ValueError(
+                "id_var has to be a str and in the both (old and new) DataFrames, or None"
             )
-        ) or (
-            self.multiplier_var == None
-        ), "multiplier_var has to be a str and in one of (old and new) DataFrames, or None"
+        if self.multiplier_var is not None and (
+            not isinstance(self.multiplier_var, str)
+            or (
+                self.multiplier_var not in self.old.columns
+                and self.multiplier_var not in self.new.columns
+            )
+        ):
+            raise ValueError(
+                "multiplier_var has to be a str and in one of (old and new) DataFrames, or None"
+            )
 
 
 @dataclass(frozen=True)
@@ -83,16 +91,16 @@ class cat2cat_mappings:
     freqs: Optional[Dict[Any, int]] = None
 
     def __post_init__(self) -> None:
-        assert isinstance(self.trans, DataFrame), "trans has to be a pandas.DataFrame"
-        assert self.trans.shape[1] == 2, "trans has to have two columns"
-        assert isinstance(self.direction, str), "direction has to be a str"
-        assert self.direction in [
-            "forward",
-            "backward",
-        ], "direction has to be one of 'forward' or 'backward'"
-        assert (self.freqs == None) or isinstance(
-            self.freqs, dict
-        ), "freqs has to be a dict, or None"
+        if not isinstance(self.trans, DataFrame):
+            raise TypeError("trans has to be a pandas.DataFrame")
+        if self.trans.shape[1] != 2:
+            raise ValueError("trans has to have two columns")
+        if not isinstance(self.direction, str):
+            raise TypeError("direction has to be a str")
+        if self.direction not in ["forward", "backward"]:
+            raise ValueError("direction has to be one of 'forward' or 'backward'")
+        if self.freqs is not None and not isinstance(self.freqs, dict):
+            raise TypeError("freqs has to be a dict, or None")
 
 
 @dataclass(frozen=True)
@@ -102,33 +110,47 @@ class cat2cat_ml:
     Args:
         data (DataFrame): dataset with features and the `cat_var`.
         cat_var (str): the dependent variable name.
-        features (Sequence[str]): list of features names where all have to be numeric or logical
-        models (Sequence[ClassifierMixin]): scikit-learn instances (classes inherit from ClassifierMixin) like,
-                                        RandomForestClassifier() or LinearDiscriminantAnalysis() instances.
+        features (Sequence[str]): list of feature names. Numeric/logical columns are used directly;
+                      categorical/object/string columns are one-hot encoded by the ML helpers.
+        models (Sequence[ClassifierMixin]): scikit-learn classifier instances.
+        on_fail (str): how failed ML weights are handled: "freq", "naive", "na", or "error".
+        fail_warn (bool): warn when failed ML weights are replaced or retained as missing.
     """
 
     data: DataFrame
     cat_var: str
     features: Sequence[str]
     models: Sequence[ClassifierMixin]
+    on_fail: str = "freq"
+    fail_warn: bool = True
 
     def __post_init__(self) -> None:
-        assert isinstance(self.data, DataFrame), "data has to be a pandas.DataFrame"
-        assert isinstance(self.cat_var, str) and (
-            self.cat_var in self.data.columns
-        ), "cat_var has to be a str and a data argument column"
-        assert isinstance(self.features, Sequence) and all(
-            [e in self.data.columns for e in self.features]
-        ), "features has to be a list-like and each have to be a column in the data argument."
-        assert isinstance(self.models, Sequence) and (
-            len(self.models) > 0
-        ), "models has to be a list-like of length at least 1."
-        assert all(
-            [issubclass(type(e), ClassifierMixin) for e in self.models]
-        ), "models arg elements have to be subclass of ClassifierMixin each"
-        assert all(
-            [hasattr(e, "fit") for e in self.models]
-        ), "each model has to have the fit method"
-        assert all(
-            [hasattr(e, "predict_proba") for e in self.models]
-        ), "each model has to have the (multi-label) predict_proba method"
+        if not isinstance(self.data, DataFrame):
+            raise TypeError("data has to be a pandas.DataFrame")
+        if not isinstance(self.cat_var, str) or self.cat_var not in self.data.columns:
+            raise ValueError("cat_var has to be a str and a data argument column")
+        if not isinstance(self.features, Sequence) or not all(
+            e in self.data.columns for e in self.features
+        ):
+            raise ValueError(
+                "features has to be a list-like and each have to be a column in the data argument."
+            )
+        if not isinstance(self.models, Sequence) or len(self.models) == 0:
+            raise ValueError("models has to be a list-like of length at least 1.")
+        if not all(issubclass(type(e), ClassifierMixin) for e in self.models):
+            raise TypeError(
+                "models arg elements have to be subclass of ClassifierMixin each"
+            )
+        if not all(hasattr(e, "fit") for e in self.models):
+            raise TypeError("each model has to have the fit method")
+        if not all(hasattr(e, "predict_proba") for e in self.models):
+            raise TypeError("each model has to have the (multi-label) predict_proba method")
+        if not isinstance(self.on_fail, str) or self.on_fail.lower() not in {
+            "freq",
+            "naive",
+            "na",
+            "error",
+        }:
+            raise ValueError("on_fail has to be one of: 'freq', 'naive', 'na', or 'error'")
+        if not isinstance(self.fail_warn, bool):
+            raise TypeError("fail_warn has to be a bool")

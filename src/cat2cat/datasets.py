@@ -3,7 +3,7 @@ from importlib_resources.abc import Traversable
 from pandas import read_pickle, DataFrame
 import cat2cat.data
 
-__all__ = ["load_trans", "load_occup", "load_verticals"]
+__all__ = ["load_trans", "load_occup", "load_occup_panel", "load_verticals"]
 
 
 def _get_file_path(file: str) -> Traversable:
@@ -51,5 +51,19 @@ def load_occup(small: bool = False) -> DataFrame:
         pandas.DataFrame: occup dataset
     """
     sour = _get_file_path("occup_small.pkl" if small else "occup.pkl")
+    with as_file(sour) as fil:
+        return read_pickle(fil)
+
+
+def load_occup_panel() -> DataFrame:
+    """load occup_panel dataset
+
+    occup_panel is an occupational panel-style example dataset from the R
+    package, useful for validating weighted/probabilistic workflows.
+
+    Returns:
+        pandas.DataFrame: occup_panel dataset
+    """
+    sour = _get_file_path("occup_panel.pkl")
     with as_file(sour) as fil:
         return read_pickle(fil)
