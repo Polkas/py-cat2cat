@@ -1,3 +1,20 @@
+import sys as _sys
+
+import numpy as _np
+
+# NumPy 2.x moved its internals from numpy.core to numpy._core.
+# Pickles created on NumPy 2.x cannot be loaded on NumPy 1.x (Python 3.8/3.9
+# CI runners) because numpy._core does not exist there.  Patch sys.modules so
+# that any reference to numpy._core.X resolves to numpy.core.X.
+if not hasattr(_np, "_core"):
+    import numpy.core as _np_core  # noqa: F401 – side-effect import
+
+    _sys.modules.setdefault("numpy._core", _np_core)
+    for _submod_name in list(_sys.modules):
+        if _submod_name.startswith("numpy.core."):
+            _alias = _submod_name.replace("numpy.core.", "numpy._core.", 1)
+            _sys.modules.setdefault(_alias, _sys.modules[_submod_name])
+
 from importlib_resources import files, as_file
 from importlib_resources.abc import Traversable
 from pandas import read_pickle, DataFrame
