@@ -78,7 +78,8 @@ def summary_c2c(
 
 
 def _validate_df(value: float, name: str) -> None:
-    if not isinstance(value, (int, float)) or not isfinite(value) or value <= 0:
+    import numbers
+    if not isinstance(value, (int, float, numbers.Real)) or not isfinite(float(value)) or float(value) <= 0:
         raise ValueError(f"{name} must be a single positive finite numeric value")
 
 

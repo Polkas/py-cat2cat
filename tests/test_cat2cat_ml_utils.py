@@ -30,8 +30,8 @@ def test_brier_and_mean_true_probability_simple_case():
     )
     y_true = ["A", "B"]
 
-    # For each row: ((0.8-1)^2 + (0.2-0)^2)/2 = 0.04 and similarly for row 2.
-    assert brier_score(probs, y_true, ["A", "B"]) == pytest.approx(0.04)
+    # Row 1: ((0.8-1)^2 + (0.2-0)^2) / 2 = 0.04; Row 2: ((0.1-0)^2 + (0.9-1)^2) / 2 = 0.01; mean = 0.025
+    assert brier_score(probs, y_true, ["A", "B"]) == pytest.approx(0.025)
     assert mean_true_probability(probs, y_true) == pytest.approx(0.85)
 
 

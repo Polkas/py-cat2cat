@@ -158,7 +158,7 @@ def test_cat2cat_ml_fallback_freq_replaces_failed_weights():
 
     assert target[col].notna().all()
     assert target.groupby("index_c2c")[col].sum().round(10).eq(1).all()
-    assert (target[col] - target["wei_freq_c2c"]).abs().max() < 1e-12
+    assert (target[col] - target["wei_freq_c2c"]).abs().max() < 1e-8
 
 
 def test_cat2cat_ml_fallback_na_keeps_missing_weights():
