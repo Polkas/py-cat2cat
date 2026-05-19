@@ -88,12 +88,12 @@ def get_mappings_array(x: ndarray) -> Dict[str, Dict[Any, List[Any]]]:
     return dict(to_old=to_old, to_new=to_new)
 
 def get_mappings_df(x: DataFrame) -> Dict[str, Dict[Any, List[Any]]]:
-    ff = x.iloc[:, 0].copy()
-    which_ff_null = ff.isnull()
-    ff = ff.values
-    ss = x.iloc[:, 1].copy()
-    which_ss_null = ss.isnull()
-    ss = ss.values
+    # Use writable numpy buffers. On newer pandas/numpy/python combinations,
+    # values extracted from a Series can be read-only and fail on assignment.
+    ff = x.iloc[:, 0].to_numpy(copy=True)
+    ss = x.iloc[:, 1].to_numpy(copy=True)
+    which_ff_null = Series(ff).isnull().to_numpy()
+    which_ss_null = Series(ss).isnull().to_numpy()
 
     if ff.dtype != ss.dtype:
         raise ValueError("mapping table columns must share the same dtype")
