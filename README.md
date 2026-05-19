@@ -29,7 +29,8 @@ The method follows a replication-and-weighting procedure that:
 2. Assigns probability weights that sum to 1 per original observation.
 3. Preserves distributional properties of non-mapped variables for valid downstream analysis.
 
-NOTE: If you have a fully linked panel where each subject appears in both periods and target-period categories are directly available, probabilistic harmonisation may be unnecessary. `cat2cat()` is most useful when direct linking is incomplete (for example repeated cross-sections, rotational panels, entrants/leavers).
+NOTE: If you have a fully linked panel where each subject appears in both periods and target-period categories are directly available, probabilistic harmonisation may be unnecessary. 
+`cat2cat()` is most useful when direct linking is incomplete (for example repeated cross-sections, rotational panels, entrants/leavers).
 
 ### Value Added of cat2cat
 
